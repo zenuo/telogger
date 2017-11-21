@@ -21,12 +21,12 @@ public final class Handler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-
+        //super.channelRead(ctx, msg);
     }
 
     @Override
     public void channelReadComplete(ChannelHandlerContext ctx) throws Exception {
-        super.channelReadComplete(ctx);
+        //super.channelReadComplete(ctx);
     }
 
     @Override
