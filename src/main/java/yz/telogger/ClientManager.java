@@ -5,6 +5,8 @@ import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.util.concurrent.GlobalEventExecutor;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 /**
  * 客户端管理器
  *
@@ -17,7 +19,7 @@ public enum ClientManager {
 
     private final ChannelGroup group = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
 
-    private int count = 0;
+    private final AtomicInteger count = new AtomicInteger(0);
 
     void write(final String msg) {
         group.writeAndFlush(msg);
@@ -25,15 +27,15 @@ public enum ClientManager {
 
     void add(final Channel channel) {
         group.add(channel);
-        ++count;
+        count.incrementAndGet();
     }
 
     void remove(final Channel channel) {
         group.remove(channel);
-        --count;
+        count.decrementAndGet();
     }
 
     int count() {
-        return count;
+        return count.get();
     }
 }
