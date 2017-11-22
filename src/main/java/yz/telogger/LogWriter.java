@@ -2,7 +2,6 @@ package yz.telogger;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 
 /**
@@ -11,27 +10,26 @@ import java.io.InputStreamReader;
  * @author 袁臻
  * 2017/11/21 23:52
  */
-final class LogWriter {
+public enum LogWriter {
 
-    private final BufferedReader bufferedReader;
+    INSTANCE;
 
-    /**
-     * 构造方法
-     *
-     * @throws IOException 若指令为空字符串
-     */
-    LogWriter() throws IOException {
-        final InputStream inputStream = Runtime
-                .getRuntime()
-                .exec(String.format(Constant.COMMAND, Constant.LOG_FILE))
-                .getInputStream();
-        this.bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+    private BufferedReader bufferedReader;
+
+    LogWriter() {
+        try {
+            final Process process = Runtime.getRuntime().exec(String.format(Constant.COMMAND, Constant.LOG_FILE));
+            this.bufferedReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.exit(2);
+        }
     }
 
     /**
-     * 包装run方法，使其能
+     * 向客户端写入新增的行
      *
-     * @return
+     * @return null
      */
     Void work() {
         this.bufferedReader.lines().
