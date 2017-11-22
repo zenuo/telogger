@@ -13,14 +13,12 @@ public final class Handler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        super.channelActive(ctx);
         logger.info("上线-" + ctx.channel().remoteAddress() + "\n目前客户端数量-" + ClientManager.INSTANCE.count());
         ClientManager.INSTANCE.add(ctx.channel());
     }
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        super.channelInactive(ctx);
         logger.info("离线-" + ctx.channel().remoteAddress() + "\n目前客户端数量-" + ClientManager.INSTANCE.count());
         ClientManager.INSTANCE.remove(ctx.channel());
     }
