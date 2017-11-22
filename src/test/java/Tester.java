@@ -1,24 +1,25 @@
 import org.junit.Test;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
+import java.io.*;
 import java.time.LocalDateTime;
 
 /**
+ * 测试类
+ *
  * @author 袁臻
  * 2017/11/22 00:05
  */
 public class Tester {
+
+    private Process process = Runtime.getRuntime().exec("tail -f log");
+
+    private BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+
+    public Tester() throws IOException {
+    }
+
     @Test
-    public void lines() throws IOException {
-        final Process process = Runtime.getRuntime().exec("tail -f log");
-        final InputStream inputStream = process.getInputStream();
-        final BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+    public void print() throws IOException {
         reader.lines().forEach(System.out::println);
     }
 
