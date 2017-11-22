@@ -16,4 +16,10 @@ final class Constant {
 
     static final String COMMAND = "tail -f %s";
 
+    static final int WRITER_IDLE_TIME_SECONDS = Integer.parseInt(System.getProperty("writerIdleTimeSeconds", "600"));
+
+    static final String HELLO = "------------欢迎访问日志服务-----------\n";
+
+    static final String BYE = "----------长时间无内容，关闭连接----------\n";
+
 }
