@@ -1,5 +1,6 @@
 package yz.telogger;
 
+import io.netty.channel.Channel;
 import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.util.concurrent.GlobalEventExecutor;
@@ -14,12 +15,17 @@ public enum ClientManager {
 
     INSTANCE;
 
-    public final ChannelGroup group = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
+    private final ChannelGroup group = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
 
-    public void write(final String msg) {
-        if (!group.isEmpty()) {
-            group.writeAndFlush(msg);
-        }
+    void write(final String msg) {
+        group.writeAndFlush(msg);
     }
 
+    void add(final Channel channel) {
+        group.add(channel);
+    }
+
+    void remove(final Channel channel) {
+        group.remove(channel);
+    }
 }
