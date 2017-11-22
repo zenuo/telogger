@@ -18,8 +18,11 @@ import io.netty.handler.ssl.util.SelfSignedCertificate;
 
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.CompletableFuture;
+import java.util.logging.Logger;
 
 public final class Server {
+
+    private static final Logger logger = Logger.getLogger(Server.class.getName());
 
     public static void main(String[] args) throws Exception {
         if (Constant.LOG_FILE == null) {
@@ -43,28 +46,29 @@ public final class Server {
             bootstrap.group(boosGroup, workerGroup)
                     .channel(NioServerSocketChannel.class)
                     .option(ChannelOption.SO_BACKLOG, 100)
-                    .handler(new LoggingHandler(LogLevel.DEBUG))
                     .childHandler(new ChannelInitializer<SocketChannel>() {
                         @Override
                         protected void initChannel(SocketChannel socketChannel) throws Exception {
+
                             final ChannelPipeline pipeline = socketChannel.pipeline();
 
                             if (sslContext != null) {
                                 pipeline.addLast(sslContext.newHandler(socketChannel.alloc()));
                             }
-
-                            pipeline.addLast(new StringDecoder(StandardCharsets.UTF_8))
+                            pipeline.addLast(new LoggingHandler(LogLevel.DEBUG))
+                                    .addLast(new StringDecoder(StandardCharsets.UTF_8))
                                     .addLast(new StringEncoder(StandardCharsets.UTF_8))
                                     .addLast(new Handler());
                         }
                     });
 
             //绑定端口，并阻塞至绑定完成
+            logger.info("绑定端口" + Constant.PORT + "-开始");
             final ChannelFuture channelFuture = bootstrap.bind(Constant.PORT).sync();
+            logger.info("绑定端口" + Constant.PORT + "-完成");
 
-            final LogWriter logWriter = new LogWriter();
-
-            CompletableFuture.supplyAsync(logWriter::work);
+            logger.info("日志书写器-开始工作");
+            CompletableFuture.supplyAsync(LogWriter.INSTANCE::work);
 
             //阻塞直至服务器套节字被关闭
             channelFuture.channel().closeFuture().sync();

@@ -28,4 +28,8 @@ public enum ClientManager {
     void remove(final Channel channel) {
         group.remove(channel);
     }
+
+    int count() {
+        return group.size();
+    }
 }
