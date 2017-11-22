@@ -25,12 +25,12 @@ public enum ClientManager {
 
     void add(final Channel channel) {
         group.add(channel);
-        count++;
+        ++count;
     }
 
     void remove(final Channel channel) {
         group.remove(channel);
-        count--;
+        --count;
     }
 
     int count() {
