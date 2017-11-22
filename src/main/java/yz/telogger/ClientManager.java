@@ -17,19 +17,23 @@ public enum ClientManager {
 
     private final ChannelGroup group = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
 
+    private int count = 0;
+
     void write(final String msg) {
         group.writeAndFlush(msg);
     }
 
     void add(final Channel channel) {
         group.add(channel);
+        count++;
     }
 
     void remove(final Channel channel) {
         group.remove(channel);
+        count--;
     }
 
     int count() {
-        return group.size();
+        return count;
     }
 }
