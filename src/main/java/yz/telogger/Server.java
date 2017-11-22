@@ -10,11 +10,10 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.string.StringDecoder;
 import io.netty.handler.codec.string.StringEncoder;
-import io.netty.handler.logging.LogLevel;
-import io.netty.handler.logging.LoggingHandler;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.util.SelfSignedCertificate;
+import io.netty.handler.timeout.IdleStateHandler;
 
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.CompletableFuture;
@@ -55,7 +54,7 @@ public final class Server {
                             if (sslContext != null) {
                                 pipeline.addLast(sslContext.newHandler(socketChannel.alloc()));
                             }
-                            pipeline.addLast(new LoggingHandler(LogLevel.DEBUG))
+                            pipeline.addLast(new IdleStateHandler(0, Constant.WRITER_IDLE_TIME_SECONDS, 0))
                                     .addLast(new StringDecoder(StandardCharsets.UTF_8))
                                     .addLast(new StringEncoder(StandardCharsets.UTF_8))
                                     .addLast(new Handler());
