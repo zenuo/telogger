@@ -1,6 +1,5 @@
 package yz.telogger;
 
-import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.timeout.IdleState;
@@ -8,7 +7,6 @@ import io.netty.handler.timeout.IdleStateEvent;
 
 import java.util.logging.Logger;
 
-@ChannelHandler.Sharable
 final class Handler extends SimpleChannelInboundHandler<String> {
 
     private Logger logger = Logger.getLogger(Handler.class.getName());
