@@ -21,7 +21,7 @@ public enum LogWriter {
 
     LogWriter() {
         try {
-            final Process process = Runtime.getRuntime().exec(String.format(Constant.COMMAND, Constant.LOG_FILE));
+            Process process = Runtime.getRuntime().exec(String.format(Constant.TAIL_F_COMMAND, Constant.LOG_FILE));
             this.bufferedReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
             logger.info("监听文件" + Constant.LOG_FILE);
         } catch (IOException e) {
