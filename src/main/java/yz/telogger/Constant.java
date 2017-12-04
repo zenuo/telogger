@@ -14,7 +14,7 @@ final class Constant {
 
     static final String LOG_FILE = System.getProperty("logFile");
 
-    static final String COMMAND = "tail -f %s";
+    static String TAIL_F_COMMAND = System.getProperty("tailCommand", "tail --retry -f %s");
 
     static final int WRITER_IDLE_TIME_SECONDS = Integer.parseInt(System.getProperty("writerIdleTimeSeconds", "600"));
 
@@ -22,4 +22,10 @@ final class Constant {
 
     static final String BYE = "----------长时间无内容，关闭连接----------\n";
 
+    static {
+        //Windows系统下的tail命令
+        if (System.getProperty("os.name").toLowerCase().contains("windows")) {
+            TAIL_F_COMMAND = "powershell Get-Content -Wait -Tail 10 %s";
+        }
+    }
 }
