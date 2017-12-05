@@ -17,11 +17,12 @@ public enum LogWriter {
 
     private BufferedReader bufferedReader;
 
-    final Logger logger = Logger.getLogger(LogWriter.class.getName());
+    private final Logger logger = Logger.getLogger(LogWriter.class.getName());
 
     LogWriter() {
         try {
-            Process process = Runtime.getRuntime().exec(String.format(Constant.TAIL_F_COMMAND, Constant.LOG_FILE));
+            final Process process = Runtime.getRuntime()
+                    .exec(String.format(Constant.TAIL_F_COMMAND, Constant.LOG_FILE));
             this.bufferedReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
             logger.info("监听文件" + Constant.LOG_FILE);
         } catch (IOException e) {
@@ -37,6 +38,7 @@ public enum LogWriter {
      * @return null
      */
     Void work() {
+        logger.info("写出文件的新增行");
         this.bufferedReader.lines().
                 forEach(line -> ClientManager.INSTANCE.write(line.concat("\n")));
         return null;
