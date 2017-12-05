@@ -1,0 +1,2 @@
+#名称,命令,工作目录,帮助
+reload,/opt/foo/bar.sh,/opt/foo,重启

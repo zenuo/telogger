@@ -36,7 +36,10 @@ final class Handler extends SimpleChannelInboundHandler<String> {
     }
 
     @Override
-    protected void channelRead0(ChannelHandlerContext channelHandlerContext, String s) throws Exception {
+    protected void channelRead0(ChannelHandlerContext ctx, String s) throws Exception {
+        logger.info("客户端-" + ctx.channel().remoteAddress() + "执行命令-" + s);
+        final String output = CommandManager.INSTANCE.exec(s.trim());
+        ctx.writeAndFlush(output);
     }
 
     @Override
