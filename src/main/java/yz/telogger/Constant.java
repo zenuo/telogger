@@ -14,8 +14,6 @@ final class Constant {
 
     static final int PORT = Integer.parseInt(System.getProperty("port", "8007"));
 
-    static final String LOG_FILE = System.getProperty("logFile");
-
     static String TAIL_F_COMMAND = "tail --retry -f %s";
 
     static final int WRITER_IDLE_TIME_SECONDS = Integer.parseInt(System.getProperty("writerIdleTimeSeconds", "600"));
@@ -24,7 +22,9 @@ final class Constant {
 
     static final String BYE = "----------再见----------\r\n";
 
-    static final String COMMAND_CSV_PATH = System.getProperty("commandCsvPath", "." + File.separatorChar + "command.csv");
+    static final String COMMAND_CONF_PATH = System.getProperty("commandCsvPath", "." + File.separatorChar + "command.conf");
+
+    static final String LOG_FILE_CONF_PATH = System.getProperty("logFileCsvPath", "." + File.separatorChar + "logfile.conf");
 
     static final String NEW_LINE = "\r\n";
 

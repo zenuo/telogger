@@ -7,7 +7,6 @@ import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
@@ -20,16 +19,22 @@ import java.util.logging.Logger;
  */
 public enum CommandManager {
 
+    /**
+     * 单例
+     */
     INSTANCE;
 
     private final Logger logger = Logger.getLogger(CommandManager.class.getName());
 
-    private final Map<String, Command> map = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, Command> map = new ConcurrentHashMap<>();
 
     private String help = null;
 
+    /**
+     * 构造方法，实现读取文件到私有映射中
+     */
     CommandManager() {
-        final Path path = Paths.get(Constant.COMMAND_CSV_PATH);
+        final Path path = Paths.get(Constant.COMMAND_CONF_PATH);
         //若文件存在
         if (Files.exists(path)) {
             try {
@@ -45,13 +50,18 @@ public enum CommandManager {
         }
     }
 
-    public String help() {
+    /**
+     * 获取帮助字符串
+     *
+     * @return 根据映射构建帮助字符串
+     */
+    private String help() {
         if (help == null) {
             final StringBuilder stringBuilder = new StringBuilder();
             stringBuilder.append("可用命令:").append(Constant.NEW_LINE);
             map.forEach((key, command) ->
                     stringBuilder.append(
-                            String.format("%-10s %-10s\r\n", command.getName(), command.getHelp())
+                            String.format("%-20s %-30s\r\n", command.getName(), command.getHelp())
                     )
             );
             help = stringBuilder.toString();
@@ -59,36 +69,46 @@ public enum CommandManager {
         return help;
     }
 
-    public String exec(final String name) {
+    /**
+     * 执行传入的命令
+     *
+     * @param commandName 命令名称字符串
+     * @return 若存在命令名称对应的字符串，则执行它并返回其输出字符串；否则返回帮助字符串
+     */
+    public String exec(final String commandName) {
         final StringBuilder stringBuilder = new StringBuilder();
-        final Command command = map.get(name);
+        final Command command = map.get(commandName);
         if (command != null) {
+            Process process = null;
             try {
-                logger.info("执行命令" + name);
+                logger.info("执行命令" + commandName);
                 //新建进程执行命令
-                final Process process = Runtime.getRuntime().exec(
+                process = Runtime.getRuntime().exec(
                         command.getCommand(),
                         null,
                         new File(command.getWorkingDirectory())
                 );
-                //读取输出
+                //读取输出，阻塞
                 new BufferedReader(new InputStreamReader(process.getInputStream()))
                         .lines()
                         .forEach(line -> stringBuilder.append(line).append(Constant.NEW_LINE));
                 //等待进程结束
-                process.waitFor(10000L, TimeUnit.NANOSECONDS);
+                process.waitFor(1000L, TimeUnit.MILLISECONDS);
             } catch (Exception e) {
                 logger.warning("执行命令-异常-" + command.toString());
                 e.printStackTrace();
+            } finally {
+                if (process != null && process.isAlive()) {
+                    process.destroy();
+                }
             }
         } else {
-            stringBuilder.append("错误-命令")
-                    .append(name)
-                    .append("不存在")
+            stringBuilder.append("错误-命令'")
+                    .append(commandName)
+                    .append("'不存在")
                     .append(Constant.NEW_LINE)
                     .append(Constant.NEW_LINE)
-                    .append(help())
-                    .append(Constant.NEW_LINE);
+                    .append(help());
         }
         return stringBuilder.toString();
     }

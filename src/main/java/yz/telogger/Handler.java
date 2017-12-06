@@ -9,7 +9,7 @@ import java.util.logging.Logger;
 
 final class Handler extends SimpleChannelInboundHandler<String> {
 
-    private Logger logger = Logger.getLogger(Handler.class.getName());
+    private final Logger logger = Logger.getLogger(Handler.class.getName());
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
@@ -50,7 +50,7 @@ final class Handler extends SimpleChannelInboundHandler<String> {
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
         //若发生通道空闲事件
         if (evt instanceof IdleStateEvent) {
-            IdleStateEvent idleStateEvent = (IdleStateEvent) evt;
+            final IdleStateEvent idleStateEvent = (IdleStateEvent) evt;
             if (idleStateEvent.state() == IdleState.WRITER_IDLE) {
                 ctx.channel().writeAndFlush(Constant.BYE);
                 //关闭通道

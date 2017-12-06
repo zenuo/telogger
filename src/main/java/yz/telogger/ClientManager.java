@@ -21,8 +21,8 @@ public enum ClientManager {
 
     private final AtomicInteger count = new AtomicInteger(0);
 
-    void write(final String msg) {
-        group.writeAndFlush(msg);
+    void writeLine(final String msg) {
+        group.writeAndFlush(msg.concat(Constant.NEW_LINE));
     }
 
     void add(final Channel channel) {

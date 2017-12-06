@@ -15,20 +15,31 @@ import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.util.SelfSignedCertificate;
 import io.netty.handler.timeout.IdleStateHandler;
 
+import javax.net.ssl.SSLException;
 import java.nio.charset.StandardCharsets;
-import java.util.concurrent.CompletableFuture;
+import java.security.cert.CertificateException;
 import java.util.logging.Logger;
 
 public final class Server {
 
     private static final Logger logger = Logger.getLogger(Server.class.getName());
 
-    public static void main(String[] args) throws Exception {
-        if (Constant.LOG_FILE == null) {
+    /**
+     * 主方法
+     *
+     * @param args 命令行参数列表
+     */
+    public static void main(String[] args) throws CertificateException, SSLException, InterruptedException {
+        if (Constant.LOG_FILE_CONF_PATH == null) {
             System.out.println("Usage: java -DlogFile=/var/log/syslog -jar telogger");
             System.exit(1);
         }
 
+        logger.info("日志书写器-开始启动");
+        LogWriterManager.INSTANCE.boot();
+        logger.info("日志书写器-启动完成");
+
+        //启动服务端
         final SslContext sslContext;
         if (Constant.SSL) {
             SelfSignedCertificate ssc = new SelfSignedCertificate();
@@ -65,9 +76,6 @@ public final class Server {
             logger.info("绑定端口" + Constant.PORT + "-开始");
             final ChannelFuture channelFuture = bootstrap.bind(Constant.PORT).sync();
             logger.info("绑定端口" + Constant.PORT + "-完成");
-
-            logger.info("日志书写器-开始工作");
-            CompletableFuture.supplyAsync(LogWriter.INSTANCE::work);
 
             //阻塞直至服务器套节字被关闭
             channelFuture.channel().closeFuture().sync();
