@@ -40,7 +40,7 @@ public enum LogWriter {
     Void work() {
         logger.info("写出文件的新增行");
         this.bufferedReader.lines().
-                forEach(line -> ClientManager.INSTANCE.write(line.concat("\n")));
+                forEach(line -> ClientManager.INSTANCE.write(line.concat(Constant.NEW_LINE)));
         return null;
     }
 }

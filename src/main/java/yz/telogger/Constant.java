@@ -20,11 +20,13 @@ final class Constant {
 
     static final int WRITER_IDLE_TIME_SECONDS = Integer.parseInt(System.getProperty("writerIdleTimeSeconds", "600"));
 
-    static final String HELLO = "------------欢迎访问日志服务-----------\n";
+    static final String HELLO = "------------欢迎访问日志服务-----------\r\n";
 
-    static final String BYE = "----------再见----------\n";
+    static final String BYE = "----------再见----------\r\n";
 
     static final String COMMAND_CSV_PATH = System.getProperty("commandCsvPath", "." + File.separatorChar + "command.csv");
+
+    static final String NEW_LINE = "\r\n";
 
     static {
         //Windows系统下的tail命令

@@ -48,10 +48,10 @@ public enum CommandManager {
     public String help() {
         if (help == null) {
             final StringBuilder stringBuilder = new StringBuilder();
-            stringBuilder.append("可用命令:\n");
+            stringBuilder.append("可用命令:").append(Constant.NEW_LINE);
             map.forEach((key, command) ->
                     stringBuilder.append(
-                            String.format("%-10s %-10s\n", command.getName(), command.getHelp())
+                            String.format("%-10s %-10s\r\n", command.getName(), command.getHelp())
                     )
             );
             help = stringBuilder.toString();
@@ -74,7 +74,7 @@ public enum CommandManager {
                 //读取输出
                 new BufferedReader(new InputStreamReader(process.getInputStream()))
                         .lines()
-                        .forEach(line -> stringBuilder.append(line).append('\n'));
+                        .forEach(line -> stringBuilder.append(line).append(Constant.NEW_LINE));
                 //等待进程结束
                 process.waitFor(10000L, TimeUnit.NANOSECONDS);
             } catch (Exception e) {
@@ -84,9 +84,11 @@ public enum CommandManager {
         } else {
             stringBuilder.append("错误-命令")
                     .append(name)
-                    .append("不存在.\n\n")
+                    .append("不存在")
+                    .append(Constant.NEW_LINE)
+                    .append(Constant.NEW_LINE)
                     .append(help())
-                    .append('\n');
+                    .append(Constant.NEW_LINE);
         }
         return stringBuilder.toString();
     }
