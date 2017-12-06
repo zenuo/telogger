@@ -33,7 +33,9 @@ public enum CommandManager {
         //若文件存在
         if (Files.exists(path)) {
             try {
-                Files.lines(path).filter(line -> !line.startsWith("#"))
+                Files.lines(path)
+                        .map(String::trim)
+                        .filter(line -> !line.startsWith("#") && line.length() != 0)
                         .map(Command::new)
                         .forEach(command -> map.put(command.getName(), command));
             } catch (IOException e) {
