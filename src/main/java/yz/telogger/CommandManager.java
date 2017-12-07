@@ -1,5 +1,7 @@
 package yz.telogger;
 
+import io.netty.channel.Channel;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -7,6 +9,9 @@ import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
@@ -34,14 +39,23 @@ public enum CommandManager {
      * 构造方法，实现读取文件到私有映射中
      */
     CommandManager() {
+        //加载内部命令
+        //订阅文件
+        final Command subscribe = new Command(Constant.INTERNAL_COMMAND_SUBSCRIBE, true);
+        map.put(subscribe.getName(), subscribe);
+        //取消订阅文件
+        final Command unsubscribe = new Command(Constant.INTERNAL_COMMAND_UNSUBSCRIBE, true);
+        map.put(unsubscribe.getName(), unsubscribe);
+
+        //加载外部命令
+        //若文件存在，则加载外部命令
         final Path path = Paths.get(Constant.COMMAND_CONF_PATH);
-        //若文件存在
         if (Files.exists(path)) {
             try {
                 Files.lines(path)
                         .map(String::trim)
                         .filter(line -> !line.startsWith("#") && line.length() != 0)
-                        .map(Command::new)
+                        .map(line -> new Command(line, false))
                         .forEach(command -> map.put(command.getName(), command));
             } catch (IOException e) {
                 logger.warning("读取命令时发生异常");
@@ -61,10 +75,11 @@ public enum CommandManager {
             stringBuilder.append("可用命令:").append(Constant.NEW_LINE);
             map.forEach((key, command) ->
                     stringBuilder.append(
-                            String.format("%-20s %-30s\r\n", command.getName(), command.getHelp())
+                            String.format("%-20s %s\r\n", command.getName(), command.getHelp())
                     )
             );
-            help = stringBuilder.toString();
+            help = stringBuilder.append(Constant.NEW_LINE).append(LogWriterManager.INSTANCE.filePathList())
+                    .toString();
         }
         return help;
     }
@@ -72,43 +87,67 @@ public enum CommandManager {
     /**
      * 执行传入的命令
      *
-     * @param commandName 命令名称字符串
-     * @return 若存在命令名称对应的字符串，则执行它并返回其输出字符串；否则返回帮助字符串
+     * @param commandLineString 命令行字符串
+     * @return 若存在对应的命令，则执行它并返回其输出字符串；否则返回帮助字符串
      */
-    public String exec(final String commandName) {
-        final StringBuilder stringBuilder = new StringBuilder();
-        final Command command = map.get(commandName);
+    String exec(final Channel channel, final String commandLineString) {
+        //使用空格切分命令行字符串
+        final List<String> segments = new ArrayList<>(Arrays.asList(commandLineString.split(" ")));
+        //命令字符串
+        final String commandString = segments.remove(0);
+        //获取命令实例
+        final Command command = map.get(commandString);
+        //判断是否存在
         if (command != null) {
-            Process process = null;
-            try {
-                logger.info("执行命令" + commandName);
-                //新建进程执行命令
-                process = Runtime.getRuntime().exec(
-                        command.getCommand(),
-                        null,
-                        new File(command.getWorkingDirectory())
-                );
-                //读取输出，阻塞
-                new BufferedReader(new InputStreamReader(process.getInputStream()))
-                        .lines()
-                        .forEach(line -> stringBuilder.append(line).append(Constant.NEW_LINE));
-                //等待进程结束
-                process.waitFor(1000L, TimeUnit.MILLISECONDS);
-            } catch (Exception e) {
-                logger.warning("执行命令-异常-" + command.toString());
-                e.printStackTrace();
-            } finally {
-                if (process != null && process.isAlive()) {
-                    process.destroy();
-                }
+            //命令存在
+            logger.info("执行命令-" + commandLineString + "-" + segments.toString());
+            if (command.isInternal()) {
+                //内部命令
+                return execInternal(channel, commandString, segments);
+            } else {
+                //外部命令
+                return execExternal(command, segments);
             }
         } else {
-            stringBuilder.append("错误-命令'")
-                    .append(commandName)
-                    .append("'不存在")
-                    .append(Constant.NEW_LINE)
-                    .append(Constant.NEW_LINE)
-                    .append(help());
+            //命令不存在
+            return String.format(Constant.COMMAND_NOT_EXISTS, commandString, help());
+        }
+    }
+
+    private String execInternal(final Channel channel, final String commandString, final List<String> arguments) {
+        switch (commandString) {
+            case "sub":
+                return LogWriterManager.INSTANCE.subscribe(channel, arguments.get(0));
+            case "unsub":
+                return LogWriterManager.INSTANCE.unsunscribe(channel);
+            default:
+                return String.format(Constant.COMMAND_NOT_EXISTS, commandString, help());
+        }
+    }
+
+    private String execExternal(final Command command, final List<String> arguments) {
+        final StringBuilder stringBuilder = new StringBuilder();
+        Process process = null;
+        try {
+            //新建进程执行命令
+            process = Runtime.getRuntime().exec(
+                    command.getCommand(),
+                    null,
+                    new File(command.getWorkingDirectory())
+            );
+            //读取输出，阻塞
+            new BufferedReader(new InputStreamReader(process.getInputStream()))
+                    .lines()
+                    .forEach(line -> stringBuilder.append(line).append(Constant.NEW_LINE));
+            //等待进程结束
+            process.waitFor(1000L, TimeUnit.MILLISECONDS);
+        } catch (Exception e) {
+            logger.warning("执行命令-异常-" + command.toString() + "-参数列表-" + arguments.toString());
+            e.printStackTrace();
+        } finally {
+            if (process != null && process.isAlive()) {
+                process.destroy();
+            }
         }
         return stringBuilder.toString();
     }

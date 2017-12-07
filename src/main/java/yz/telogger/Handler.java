@@ -30,7 +30,7 @@ final class Handler extends SimpleChannelInboundHandler<String> {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        logger.warning("客户端-" + ctx.channel().remoteAddress() + "发生异常：");
+        logger.warning("客户端-" + ctx.channel().remoteAddress() + "发生异常");
         cause.printStackTrace();
         ctx.close();
     }
@@ -40,8 +40,8 @@ final class Handler extends SimpleChannelInboundHandler<String> {
         final String trimMsg = msg.trim();
         if (trimMsg.length() != 0) {
             //若客户端发送的字符串去除两端的空白后非空，则执行该字符串
-            logger.info("客户端-" + ctx.channel().remoteAddress() + "执行命令-" + trimMsg);
-            final String output = CommandManager.INSTANCE.exec(trimMsg);
+            logger.info("客户端-" + ctx.channel().remoteAddress() + "-执行命令-" + trimMsg);
+            final String output = CommandManager.INSTANCE.exec(ctx.channel(), trimMsg);
             ctx.writeAndFlush(output);
         }
     }

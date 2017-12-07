@@ -78,4 +78,12 @@ public class Tester {
         System.out.println(System.getProperty("os.name"));
     }
 
+    @Test
+    public void thread() {
+        final Thread thread = new Thread();
+        thread.start();
+        thread.interrupt();
+        thread.run();
+    }
+
 }
