@@ -52,4 +52,17 @@ final class Constant {
 
     static final String ERROR_NOT_SUBSCRIBED = "错误-未订阅";
 
+    static final String ERROR_INVALID_ARGUMENTS = "错误-错误参数列表-%s";
+
+    static final String ERROR_MULTI_SUBSCRIBE = "错误-多个订阅-请执行unsub以取消订阅后再试";
+
+    /**
+     * 成功
+     */
+    static final String SUCCESS_SUBSCRIBED = "订阅-成功-%s-%s";
+
+    static final String SUCCESS_ALREADY_SUBCSRIBED = "订阅-已经订阅-%s-%s";
+
+    static final String SUCCESS_UNSUBSCRIBED = "取消订阅-完成-%s";
+
 }

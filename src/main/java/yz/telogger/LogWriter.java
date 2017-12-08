@@ -23,26 +23,35 @@ final class LogWriter {
 
     private Process process = null;
 
-    private final String filePath;
-
     private boolean isWorking = false;
+
+    private final String filePath;
 
     private final Path path;
 
     private final Logger logger = Logger.getLogger(LogWriter.class.getName());
 
     /**
-     * Channel匹配器
+     * 匹配器
      */
     private final SetChannelMatcher setChannelMatcher = new SetChannelMatcher();
+
+    /**
+     * 构造方法
+     */
+    LogWriter(String filePath) {
+        this.path = Paths.get(filePath);
+        this.filePath = filePath;
+    }
 
     /**
      * 将指定的channel加入匹配器
      *
      * @param channel 指定的channel实例
      */
-    boolean subscribe(Channel channel) {
-        return setChannelMatcher.add(channel);
+    void subscribe(Channel channel) {
+        setChannelMatcher.add(channel);
+        check();
     }
 
     /**
@@ -50,40 +59,51 @@ final class LogWriter {
      *
      * @param channel 指定的channel实例
      */
-    boolean unsubscribe(Channel channel) {
-        return setChannelMatcher.remove(channel);
+    void unsubscribe(Channel channel) {
+        setChannelMatcher.remove(channel);
+        check();
     }
 
     /**
-     * 构造方法
+     * 检查状态
      */
-    LogWriter(String filePath) {
-        this.filePath = filePath;
-        this.path = Paths.get(filePath);
+    private void check() {
+        if (isNeedBoot()) {
+            logger.info("启动" + filePath);
+            boot();
+        }
+        if (isNeedShutDown()) {
+            logger.info("关闭" + filePath);
+            shutdown();
+        }
     }
 
     /**
      * 是否需要启动
      *
-     * @return 若需要被启动，返回true，否则返回false
+     * @return 当且仅当文件不为空且文件存在且未在工作中且存在订阅客户端时返回true，否则返回false
      */
-    boolean isNeedBoot() {
-        //当且仅当文件不为空且文件存在且未在工作中且存在订阅客户端时返回true
+    private boolean isNeedBoot() {
         return path != null && Files.exists(path) && !isWorking && !setChannelMatcher.isEmpty();
     }
 
-    boolean isNeedShutDown() {
+    /**
+     * 是否需要关闭
+     *
+     * @return 当且仅当在工作中且不存在订阅客户端时返回true，否则返回false
+     */
+    private boolean isNeedShutDown() {
         return isWorking && setChannelMatcher.isEmpty();
     }
 
-    void boot() {
+    private void boot() {
         thread = new Thread(this::work);
         thread.setName("Thread-" + filePath);
         thread.setDaemon(true);
         thread.start();
     }
 
-    void shutdown() {
+    private void shutdown() {
         isWorking = false;
         if (process != null && process.isAlive()) {
             process.destroyForcibly();
@@ -140,12 +160,12 @@ final class SetChannelMatcher implements ChannelMatcher {
 
     private final ConcurrentSet<Channel> set = new ConcurrentSet<>();
 
-    boolean add(final Channel channel) {
-        return set.add(channel);
+    void add(final Channel channel) {
+        set.add(channel);
     }
 
-    boolean remove(final Channel channel) {
-        return set.remove(channel);
+    void remove(final Channel channel) {
+        set.remove(channel);
     }
 
     boolean isEmpty() {

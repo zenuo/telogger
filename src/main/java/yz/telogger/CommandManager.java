@@ -41,10 +41,10 @@ public enum CommandManager {
     CommandManager() {
         //加载内部命令
         //订阅文件
-        final Command subscribe = new Command(Constant.INTERNAL_COMMAND_SUBSCRIBE, true);
+        final Command subscribe = new Command(Constant.COMMAND_INTERNAL_SUBSCRIBE, true);
         map.put(subscribe.getName(), subscribe);
         //取消订阅文件
-        final Command unsubscribe = new Command(Constant.INTERNAL_COMMAND_UNSUBSCRIBE, true);
+        final Command unsubscribe = new Command(Constant.COMMAND_INTERNAL_UNSUBSCRIBE, true);
         map.put(unsubscribe.getName(), unsubscribe);
 
         //加载外部命令
@@ -78,7 +78,7 @@ public enum CommandManager {
                             String.format("%-20s %s\r\n", command.getName(), command.getHelp())
                     )
             );
-            help = stringBuilder.append(Constant.NEW_LINE).append(LogWriterManager.INSTANCE.filePathList())
+            help = stringBuilder.append(Constant.NEW_LINE).append(LogWriterManager.INSTANCE.filePaths())
                     .toString();
         }
         return help;
@@ -117,7 +117,7 @@ public enum CommandManager {
     private String execInternal(final Channel channel, final String commandString, final List<String> arguments) {
         switch (commandString) {
             case "sub":
-                return LogWriterManager.INSTANCE.subscribe(channel, arguments.get(0));
+                return LogWriterManager.INSTANCE.subscribe(channel, arguments);
             case "unsub":
                 return LogWriterManager.INSTANCE.unsunscribe(channel);
             default:

@@ -32,7 +32,7 @@ public enum ClientManager {
     }
 
     void remove(final Channel channel) {
-        LogWriterManager.INSTANCE.offline(channel);
+        LogWriterManager.INSTANCE.unsunscribe(channel);
         group.remove(channel);
         count.decrementAndGet();
     }

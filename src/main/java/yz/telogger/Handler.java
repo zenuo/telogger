@@ -43,7 +43,7 @@ final class Handler extends SimpleChannelInboundHandler<String> {
             //若客户端发送的字符串去除两端的空白后非空，则执行该字符串
             logger.info("客户端-" + ctx.channel().remoteAddress() + "-执行命令-" + trimMsg);
             final String output = CommandManager.INSTANCE.exec(ctx.channel(), trimMsg);
-            ctx.writeAndFlush(output);
+            ctx.writeAndFlush(output.concat(Constant.NEW_LINE));
         }
     }
 
