@@ -108,19 +108,21 @@ enum LogWriterManager {
                 return "订阅-已订阅-" + channel.remoteAddress() + "-" + filePath;
             }
         } else {
-            return String.format(Constant.FILE_NOT_EXISTS, filePath);
+            return String.format(Constant.ERROR_FILE_NOT_EXISTS, filePath);
         }
     }
 
     String unsunscribe(final Channel channel) {
         for (final LogWriter logWriter : map.values()) {
-            final boolean unsubscribe = logWriter.unsubscribe(channel);
-            if (unsubscribe) {
-                return "取消订阅-成功-" + channel.remoteAddress();
-            } else {
-                return "取消订阅-未订阅-" + channel.remoteAddress();
+            if (logWriter.contains(channel)) {
+                final boolean unsubscribe = logWriter.unsubscribe(channel);
+                if (unsubscribe) {
+                    return "取消订阅-成功-" + channel.remoteAddress();
+                } else {
+                    return "取消订阅-未订阅-" + channel.remoteAddress();
+                }
             }
         }
-        return Constant.NOT_SUBSCRIBED;
+        return Constant.ERROR_NOT_SUBSCRIBED;
     }
 }
