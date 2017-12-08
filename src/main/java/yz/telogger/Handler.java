@@ -14,7 +14,8 @@ final class Handler extends SimpleChannelInboundHandler<String> {
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         ClientManager.INSTANCE.add(ctx.channel());
-        ctx.channel().writeAndFlush(Constant.HELLO);
+        //打印欢迎和帮助信息
+        ctx.channel().writeAndFlush(Constant.HELLO + Constant.NEW_LINE + CommandManager.INSTANCE.help());
         logger.info("上线-" + ctx.channel().remoteAddress() + "\n当前客户端数量" + ClientManager.INSTANCE.count());
     }
 
