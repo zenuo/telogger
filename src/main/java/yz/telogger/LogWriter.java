@@ -19,7 +19,9 @@ import java.util.logging.Logger;
  */
 final class LogWriter {
 
-    private Thread thread;
+    private Thread thread = null;
+
+    private Process process = null;
 
     private final String filePath;
 
@@ -75,21 +77,26 @@ final class LogWriter {
     }
 
     void boot() {
-        if (thread == null) {
-            thread = new Thread(this::work);
-            thread.setName("Thread-" + filePath);
-            //thread.setDaemon(true);
-            thread.start();
-        } else {
-            thread.start();
-        }
+        thread = new Thread(this::work);
+        thread.setName("Thread-" + filePath);
+        thread.setDaemon(true);
+        thread.start();
     }
 
     void shutdown() {
-        if (!thread.isInterrupted()) {
-            isWorking = false;
-            thread.interrupt();
+        isWorking = false;
+        if (process != null && process.isAlive()) {
+            process.destroyForcibly();
+            process = null;
         }
+        if (thread != null && !thread.isInterrupted()) {
+            thread.interrupt();
+            thread = null;
+        }
+    }
+
+    boolean contains(Object o) {
+        return setChannelMatcher.contains(o);
     }
 
     /**
@@ -100,7 +107,7 @@ final class LogWriter {
             //设置isWorking为true
             isWorking = true;
             //进程引用
-            Process process = null;
+
             try {
                 //创建进程
                 process = Runtime.getRuntime()
@@ -143,6 +150,10 @@ final class SetChannelMatcher implements ChannelMatcher {
 
     boolean isEmpty() {
         return set.isEmpty();
+    }
+
+    boolean contains(Object o) {
+        return set.contains(o);
     }
 
     @Override
