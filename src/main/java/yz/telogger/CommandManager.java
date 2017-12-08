@@ -78,7 +78,9 @@ public enum CommandManager {
                             String.format("%-20s %s\r\n", command.getName(), command.getHelp())
                     )
             );
-            help = stringBuilder.append(Constant.NEW_LINE).append(LogWriterManager.INSTANCE.filePaths())
+            help = stringBuilder
+                    .append(Constant.NEW_LINE)
+                    .append(LogWriterManager.INSTANCE.filePaths())
                     .toString();
         }
         return help;
@@ -114,6 +116,14 @@ public enum CommandManager {
         }
     }
 
+    /**
+     * 执行内部命令
+     *
+     * @param channel       请求执行命令的channel
+     * @param commandString 命令字符串
+     * @param arguments     参数字符串列表
+     * @return 返回给客户端的信息
+     */
     private String execInternal(final Channel channel, final String commandString, final List<String> arguments) {
         switch (commandString) {
             case "sub":
@@ -125,6 +135,13 @@ public enum CommandManager {
         }
     }
 
+    /**
+     * 执行外部命令
+     *
+     * @param command   命令字符串
+     * @param arguments 参数字符串列表
+     * @return 返回给客户端的信息
+     */
     private String execExternal(final Command command, final List<String> arguments) {
         final StringBuilder stringBuilder = new StringBuilder();
         Process process = null;
