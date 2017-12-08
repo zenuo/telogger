@@ -69,7 +69,7 @@ public enum CommandManager {
      *
      * @return 根据映射构建帮助字符串
      */
-    private String help() {
+    String help() {
         if (help == null) {
             final StringBuilder stringBuilder = new StringBuilder();
             stringBuilder.append("可用命令:").append(Constant.NEW_LINE);
@@ -110,7 +110,7 @@ public enum CommandManager {
             }
         } else {
             //命令不存在
-            return String.format(Constant.COMMAND_NOT_EXISTS, commandString, help());
+            return String.format(Constant.ERROR_COMMAND_NOT_EXISTS, commandString, help());
         }
     }
 
@@ -121,7 +121,7 @@ public enum CommandManager {
             case "unsub":
                 return LogWriterManager.INSTANCE.unsunscribe(channel);
             default:
-                return String.format(Constant.COMMAND_NOT_EXISTS, commandString, help());
+                return String.format(Constant.ERROR_COMMAND_NOT_EXISTS, commandString, help());
         }
     }
 
