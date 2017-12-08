@@ -80,12 +80,15 @@ enum LogWriterManager {
         //无尽循环
         while (true) {
             logger.info("循环检测");
+            //开启需要开启的
             map.values().stream()
                     .filter(LogWriter::isNeedBoot)
                     .forEach(LogWriter::boot);
+            //关闭需要关闭的
             map.values().stream()
                     .filter(LogWriter::isNeedShutDown)
                     .forEach(LogWriter::shutdown);
+            //等待5秒，执行下一次检查
             try {
                 Thread.sleep(5000L);
             } catch (InterruptedException e) {
