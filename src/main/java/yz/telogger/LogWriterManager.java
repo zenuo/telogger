@@ -74,7 +74,7 @@ enum LogWriterManager {
             map.values().forEach(logWriter -> stringBuilder
                     .append(logWriter.getFilePath())
                     .append(Constant.NEW_LINE));
-            filePaths = stringBuilder.append(Constant.NEW_LINE).toString();
+            filePaths = stringBuilder.toString();
         }
         return filePaths;
     }
