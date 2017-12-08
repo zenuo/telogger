@@ -15,8 +15,8 @@ final class Constant {
     static final int PORT = Integer.parseInt(System.getProperty("port", "8007"));
 
     static String TAIL_F_COMMAND = System.getProperty("os.name").toLowerCase().contains("windows") ?
-            "powershell Get-Content -Wait -Tail 10 %s" :
-            "tail --retry -f %s";
+            "\"C:\\Program Files\\Git\\usr\\bin\\tail.exe\" -n 10 --retry -f %s" :
+            "tail -n 10 --retry -f %s";
 
     static final int WRITER_IDLE_TIME_SECONDS = Integer.parseInt(System.getProperty("writerIdleTimeSeconds", "600"));
 
