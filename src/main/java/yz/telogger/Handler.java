@@ -5,6 +5,7 @@ import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
 
+import java.util.Objects;
 import java.util.logging.Logger;
 
 final class Handler extends SimpleChannelInboundHandler<String> {
@@ -13,6 +14,7 @@ final class Handler extends SimpleChannelInboundHandler<String> {
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
+        //添加客户端
         ClientManager.INSTANCE.add(ctx.channel());
         //打印欢迎和帮助信息
         ctx.channel().writeAndFlush(Constant.HELLO + Constant.NEW_LINE + CommandManager.INSTANCE.help());
@@ -21,6 +23,7 @@ final class Handler extends SimpleChannelInboundHandler<String> {
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+        //移除客户端
         ClientManager.INSTANCE.remove(ctx.channel());
         logger.info("离线-" + ctx.channel().remoteAddress() + "\n当前客户端数量" + ClientManager.INSTANCE.count());
     }
@@ -40,10 +43,17 @@ final class Handler extends SimpleChannelInboundHandler<String> {
     protected void channelRead0(ChannelHandlerContext ctx, String msg) throws Exception {
         final String trimMsg = msg.trim();
         if (trimMsg.length() != 0) {
-            //若客户端发送的字符串去除两端的空白后非空，则执行该字符串
             logger.info("客户端-" + ctx.channel().remoteAddress() + "-执行命令-" + trimMsg);
-            final String output = CommandManager.INSTANCE.exec(ctx.channel(), trimMsg);
-            ctx.writeAndFlush(output.concat(Constant.NEW_LINE));
+            //若客户端发送的字符串去除两端的空白后非空，则执行该字符串
+            if (Objects.equals(trimMsg, "quit")) {
+                //打印再见信息
+                ctx.channel().writeAndFlush(Constant.BYE);
+                //关闭通道
+                ctx.channel().close();
+            } else {
+                final String output = CommandManager.INSTANCE.exec(ctx.channel(), trimMsg);
+                ctx.writeAndFlush(output.concat(Constant.NEW_LINE));
+            }
         }
     }
 

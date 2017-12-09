@@ -46,6 +46,12 @@ public enum CommandManager {
         //取消订阅文件
         final Command unsubscribe = new Command(Constant.COMMAND_INTERNAL_UNSUBSCRIBE, true);
         map.put(unsubscribe.getName(), unsubscribe);
+        //帮助
+        final Command help = new Command(Constant.COMMAND_INTERNAL_HELP, true);
+        map.put(help.getName(), help);
+        //退出
+        final Command quit = new Command(Constant.COMMAND_INTERNAL_QUIT, true);
+        map.put(quit.getName(), quit);
 
         //加载外部命令
         //若文件存在，则加载外部命令
@@ -102,7 +108,7 @@ public enum CommandManager {
         //判断是否存在
         if (command != null) {
             //命令存在
-            logger.info("执行命令-" + commandLineString + "-" + segments.toString());
+            logger.info("执行命令-" + commandString + "-" + segments.toString());
             if (command.isInternal()) {
                 //内部命令
                 return execInternal(channel, commandString, segments);
@@ -130,6 +136,8 @@ public enum CommandManager {
                 return LogWriterManager.INSTANCE.subscribe(channel, arguments);
             case "unsub":
                 return LogWriterManager.INSTANCE.unsunscribe(channel);
+            case "help":
+                return help();
             default:
                 return String.format(Constant.ERROR_COMMAND_NOT_EXISTS, commandString, help());
         }

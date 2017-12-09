@@ -43,6 +43,10 @@ final class Constant {
 
     static final String COMMAND_INTERNAL_UNSUBSCRIBE = "unsub,,,取消订阅 无参数";
 
+    static final String COMMAND_INTERNAL_HELP = "help,,,帮助";
+
+    static final String COMMAND_INTERNAL_QUIT = "quit,,,退出";
+
     /**
      * 错误
      */
