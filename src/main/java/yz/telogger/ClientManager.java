@@ -32,8 +32,11 @@ public enum ClientManager {
     }
 
     void remove(final Channel channel) {
+        //取消订阅
         LogWriterManager.INSTANCE.unsunscribe(channel);
+        //删除channel
         group.remove(channel);
+        //减少计数
         count.decrementAndGet();
     }
 
