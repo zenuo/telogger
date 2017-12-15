@@ -35,9 +35,9 @@ public final class Server {
     public static void main(String[] args) throws CertificateException, SSLException, InterruptedException {
         log.info("Telogger booting");
 
-        //Boot LogWriterManager
-        LogWriterManager.INSTANCE.boot();
-        //Init CommandManager
+        //Initialize LogWriterManager
+        LogWriterManager.INSTANCE.init();
+        //Initialize CommandManager
         CommandManager.INSTANCE.init();
 
         //SSL encryption
