@@ -1,34 +1,55 @@
 #!/bin/bash
-#配置
 
-#工作路径
-WORK_DIR="/opt/telogger/"
-#jar文件路径
-JAR_PATH="telogger-1.0-jar-with-dependencies.jar"
-#需要监听的日志文件
-LOG_FILE="/opt/omts-cloud-service/log/omts-cloud-service.log"
-#需要监听的端口，默认8007
-PORT="8007"
+##Configure
+#Working Directory
+WORK_DIRECTORY="/home/user/project/telogger"
+#Jar file name
+JAR_FILE_PATH="/home/user/project/telogger/target/telogger-1.0-jar-with-dependencies.jar"
+#Boot type, "start" or "restart"
+TYPE=""
+#Log file path
+LOG_FILE_PATH="log"
+#Command
+CMD="java -Dfile.encoding=UTF8 -Duser.language=en -Duser.region=US -Dport=8007 -Dssl=true -DlogFile=D:\omts\log\cato.log -jar "$JAR_FILE_PATH
+#PID File
+PID_FILE_PATH="pid"
 
-#启动或重启
-
-#切换工作路径
-cd $WORK_DIR
-#获取程序的进程号
-PID=`ps -ef | grep $JAR_PATH | grep -v grep | awk '{print $2}'`
-#将PID重定向至文件
-echo $PID > pid
-#判断进程是否存在
-if [[ "$PID" -eq "" ]] ; then
-        #若不存在，则是启动
-        TYPE="启动\n"
-else
-        #否则是重启
-        TYPE="重启\n"
-        #停止进程
-        kill $PID
+##Boot
+#change working directory
+cd $WORK_DIRECTORY
+#judge jar file exists or not
+if [ ! -e "$JAR_FILE_PATH" ] ; then
+    #if not exists, exit
+    echo -e "\nTime："`date`"\nError：File "$JAR_FILE_PATH" not exist." >> $LOG_FILE_PATH
+    tail -n 2 $LOG_FILE_PATH
+    exit 1
 fi
-echo -e $TYPE
-#启动
-nohup java -jar -Dport=$PORT -DlogFile=$LOG_FILE $JAR_PATH >> log 2>&1 &
-tail -n 1 -f log
+#judge pid file exists or not
+if [ ! -e "$PID_FILE_PATH" ] ; then
+        #写入空PID
+    echo '' > $PID_FILE_PATH
+        PID=''
+fi
+#get pid
+PID=`cat $PID_FILE_PATH`
+#judge process exists or not
+if [[ "$PID" -eq "" ]] ; then
+    #if not exists, start
+    TYPE="Start\n"
+else
+    #if exists, restart
+    TYPE="Restart\n"
+    #stop process
+    kill -9 $PID
+    #Sleep
+    sleep 10
+fi
+#start
+nohup $CMD >> $LOG_FILE_PATH 2>&1 &
+#overwrite pid to pid file
+PID=`jps -lm | grep -a $JAR_FILE_PATH | awk '{print $1}'`
+echo $PID > $PID_FILE_PATH
+#promote info
+echo -e "\nTime："`date`"\nOperation："$TYPE"\nPID: "$PID
+echo -e "\nTime："`date`"\nOperation："$TYPE"\nPID: "$PID >> $LOG_FILE_PATH
+exit
