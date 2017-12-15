@@ -3,15 +3,15 @@ package yz.telogger;
 import java.io.File;
 
 /**
- * 常量类
+ * Constant class
  *
- * @author 袁臻
+ * @author yziyz
  * 2017/11/21 23:55
  */
 final class Constant {
 
     /**
-     * 可配置常量
+     * Configuration
      */
     static final boolean SSL = System.getProperty("ssl") != null;
 
@@ -19,54 +19,52 @@ final class Constant {
 
     static final int WRITER_IDLE_TIME_SECONDS = Integer.parseInt(System.getProperty("writerIdleTimeSeconds", "600"));
 
-    static final String COMMAND_CONF_PATH = System.getProperty("commandCsvPath", "." + File.separatorChar + "command.conf");
+    static final String COMMAND_CONF_PATH = System.getProperty("commandConfPath", "." + File.separatorChar + "command.conf");
 
-    static final String LOG_FILE_CONF_PATH = System.getProperty("logFileCsvPath", "." + File.separatorChar + "logfile.conf");
+    static final String LOG_FILE_CONF_PATH = System.getProperty("logFileConfPath", "." + File.separatorChar + "logfile.conf");
 
-    /**
-     * 不可配置常量
-     */
-    static final String HELLO = "------------欢迎访问日志服务------------\r\n";
+    static final String MESSAGE_HELLO = "-------Welcome to telogger-------\r\n";
 
-    static final String BYE = "---------------再见---------------\r\n";
+    static final String MESSAGE_BYE = "---------------Bye---------------\r\n";
 
     static final String NEW_LINE = "\r\n";
 
     static String TAIL_F_COMMAND = System.getProperty("os.name").toLowerCase().contains("windows") ?
-            "\"C:\\Program Files\\Git\\usr\\bin\\tail.exe\" -n 10 --retry -f %s" :
-            "tail -n 10 --retry -f %s";
+            "\"C:\\Program Files\\Git\\usr\\bin\\tail.exe\" -n 0 --retry -f %s" :
+            "tail -n 0 --retry -f %s";
 
     /**
-     * 内部命令
+     * Internal command
      */
-    static final String COMMAND_INTERNAL_SUBSCRIBE = "sub,,,订阅某一个日志文件 参数:想要订阅的文件名";
+    static final String COMMAND_INTERNAL_SUBSCRIBE = "sub,,,subscribe a log file, if you already subscribed a log file," +
+            " please unsubscribe it first. e.g. sub {FileName}";
 
-    static final String COMMAND_INTERNAL_UNSUBSCRIBE = "unsub,,,取消订阅 无参数";
+    static final String COMMAND_INTERNAL_UNSUBSCRIBE = "unsub,,,unsubscribe the file you subscribed.";
 
-    static final String COMMAND_INTERNAL_HELP = "help,,,帮助";
+    static final String COMMAND_INTERNAL_HELP = "help,,,get the help message.";
 
-    static final String COMMAND_INTERNAL_QUIT = "quit,,,退出";
+    static final String COMMAND_INTERNAL_QUIT = "quit,,,exit the session.";
 
     /**
-     * 错误
+     * Error message
      */
-    static final String ERROR_COMMAND_NOT_EXISTS = "错误-命令'%s'不存在\r\n\r\n%s";
+    static final String ERROR_COMMAND_NOT_FOUND = "Error-command not found: %s";
 
-    static final String ERROR_FILE_NOT_EXISTS = "错误-不存在文件-%s";
+    static final String ERROR_FILE_NOT_FOUND = "Error-file not found: %s";
 
-    static final String ERROR_NOT_SUBSCRIBED = "错误-未订阅";
+    static final String ERROR_NOT_SUBSCRIBED = "Error-Sorry, you didn't subscribed any log files.";
 
-    static final String ERROR_INVALID_ARGUMENTS = "错误-错误参数列表-%s";
+    static final String ERROR_INVALID_ARGUMENTS = "Error-Invalid arguments: %s, please check the command by " +
+            "getting help message, and retry.";
 
-    static final String ERROR_MULTI_SUBSCRIBE = "错误-多个订阅-请执行unsub以取消订阅后再试";
+    static final String ERROR_MULTIPLE_SUBSCRIBTION = "Error-Sorry, you already subscribed a log file, please unsubscribe " +
+            "it and retry";
 
     /**
-     * 成功
+     * Success message
      */
-    static final String SUCCESS_SUBSCRIBED = "订阅-成功-%s-%s";
+    static final String SUCCESS_SUBSCRIBED = "Success-Subscribed log file: %s";
 
-    static final String SUCCESS_ALREADY_SUBCSRIBED = "订阅-已经订阅-%s-%s";
-
-    static final String SUCCESS_UNSUBSCRIBED = "取消订阅-完成-%s";
+    static final String SUCCESS_UNSUBSCRIBED = "Success-Unsubscribed log file: %s";
 
 }
