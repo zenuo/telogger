@@ -9,151 +9,184 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 import java.util.logging.Logger;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 /**
- * 日志书写者管理
+ * Log writer manager
  *
- * @author 袁臻
+ * @author yziyz
  * 2017/12/06 16:32
  */
 enum LogWriterManager {
 
     /**
-     * 单例
+     * Instance
      */
     INSTANCE;
 
-    private final Logger logger = Logger.getLogger(LogWriterManager.class.getName());
+    /**
+     * Log
+     */
+    private final Logger log = Logger.getLogger(LogWriterManager.class.getName());
 
-    private final ConcurrentHashMap<String, LogWriter> map = new ConcurrentHashMap<>();
+    /**
+     * The mapping from file path to its instance
+     */
+    private final ConcurrentHashMap<String, LogWriter> filePathToInstanceMap = new ConcurrentHashMap<>();
 
+    /**
+     * Message of file path
+     */
     private String filePaths = null;
 
     /**
-     * 启动
+     * Initialize
      */
-    void boot() {
+    void init() {
+        //path of log files configuration file
         final Path path = Paths.get(Constant.LOG_FILE_CONF_PATH);
-        //若文件存在
+        //if file exists
         if (Files.exists(path)) {
             try {
-                //读取配置文件的所有行，加入列表中
-                map.putAll(Files.lines(path)
+                //read lines and construct log writer instances
+                filePathToInstanceMap.putAll(Files.lines(path)
                         .map(String::trim)
-                        .filter(line -> !line.startsWith("#") && line.length() != 0)
+                        .filter(this::isValidLogFile)
                         .map(LogWriter::new)
-                        .collect(Collectors.toConcurrentMap(LogWriter::getFilePath, logWriter -> logWriter)));
+                        .collect(Collectors.toConcurrentMap(LogWriter::getFilePath, Function.identity())));
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
-        //判断映射是否为空
-        if (map.isEmpty()) {
-            throw new IllegalStateException("No file to listen, exit now.");
+        //judge whether the filePathToInstanceMap is empty or not
+        if (filePathToInstanceMap.isEmpty()) {
+            //if empty, throw exception
+            throw new IllegalStateException("No log file configured, exit now.");
         } else {
-            //打印监听文件列表
-            final List<String> filePathList = map.values()
+            //print log file list
+            final List<String> filePathList = filePathToInstanceMap.values()
                     .stream()
                     .map(LogWriter::getFilePath)
                     .collect(Collectors.toList());
-            logger.info("监听文件列表-" + filePathList.toString());
+            log.info("Log files list: " + filePathList.toString());
         }
     }
 
     /**
-     * 获取文件列表字符串
+     * Get log files list string
      *
-     * @return 文件列表字符串
+     * @return log files list string
      */
     String filePaths() {
+        //lazy initialize
         if (filePaths == null) {
-            //懒加载
-            final StringBuilder stringBuilder = new StringBuilder("可订阅的文件列表:\r\n");
-            map.values().forEach(logWriter -> stringBuilder
-                    .append(logWriter.getFilePath())
-                    .append(Constant.NEW_LINE));
-            filePaths = stringBuilder.toString();
+            final StringBuilder stringBuilder = new StringBuilder("Log files:")
+                    .append(Constant.NEW_LINE);
+            stringBuilder.append(filePathToInstanceMap.values().stream().collect(Collector.of(
+                    StringBuilder::new,
+                    (StringBuilder sb, LogWriter l) -> sb.append(l.getFilePath()).append(Constant.NEW_LINE),
+                    StringBuilder::append,
+                    Collector.Characteristics.IDENTITY_FINISH
+            )));
+            filePaths = stringBuilder.append(Constant.NEW_LINE).toString();
         }
+        //return
         return filePaths;
     }
 
     /**
-     * 订阅
+     * Subscribe a log file
      *
-     * @param channel   需要订阅的channel实例
-     * @param arguments 参数列表
-     * @return 返回给客户端的信息
+     * @param channel   the channel of the client requested
+     * @param arguments arguments string list
+     * @return message return to client
      */
     String subscribe(final Channel channel, final List<String> arguments) {
-        //判断参数列表长度
+        log.info("Subscribe-" + channel.remoteAddress() + "-" + arguments.toString());
+        //judge arguments length
         if (arguments.size() == 1) {
-            //若为1
+            //if length is 1
             final String filePath = arguments.get(0);
-            //判断是否已订阅
+            //judge whether client already subscribed or not
             final LogWriter subscribed = subscribed(channel);
             if (subscribed != null) {
-                //存在订阅
-                //判断已订阅的日志是否为此次请求订阅的日志
+                //subscribed
+                //judge whether request log file is the subscribed log file or not
                 if (Objects.equals(subscribed.getFilePath(), filePath)) {
-                    //若是
-                    return String.format(Constant.SUCCESS_ALREADY_SUBCSRIBED, channel.remoteAddress().toString(), filePath);
+                    //yes
+                    return String.format(Constant.SUCCESS_SUBSCRIBED, filePath);
                 } else {
-                    //若不是
-                    return Constant.ERROR_MULTI_SUBSCRIBE;
+                    //not
+                    return Constant.ERROR_MULTIPLE_SUBSCRIBTION;
                 }
             } else {
-                //不存在订阅
-                //判断请求订阅的日志文件名称是否存在
-                final LogWriter logWriter = map.get(filePath);
+                //not subscribed
+                //judge request log file exists or not
+                final LogWriter logWriter = filePathToInstanceMap.get(filePath);
                 if (logWriter != null) {
-                    //若存在
+                    //exists
                     logWriter.subscribe(channel);
-                    return String.format(Constant.SUCCESS_SUBSCRIBED, channel.remoteAddress().toString(), filePath);
+                    //subscribtion success
+                    return String.format(Constant.SUCCESS_SUBSCRIBED, filePath);
                 } else {
-                    //若不存在
-                    return String.format(Constant.ERROR_FILE_NOT_EXISTS, filePath);
+                    //not exists
+                    //subscribtion error
+                    return String.format(Constant.ERROR_FILE_NOT_FOUND, filePath);
                 }
             }
         } else {
-            //若不为1
+            //if length is not 1
             return String.format(Constant.ERROR_INVALID_ARGUMENTS, arguments.toString());
         }
     }
 
     /**
-     * 取消订阅
+     * Unsubscribe
      *
-     * @param channel 需要取消订阅的channel
-     * @return 返回给客户端的信息
+     * @param channel the channel instance of the client that would unsubscribe.
+     * @return the message to return to the client.
      */
     String unsunscribe(final Channel channel) {
-        logger.info("取消订阅-" + channel.remoteAddress());
-        //获取已订阅的日志
+        log.info("Unsubscribe-" + channel.remoteAddress());
+        //get the subscribed log writer.
         final LogWriter subscribed = subscribed(channel);
         if (subscribed != null) {
             subscribed.unsubscribe(channel);
-            //若不为空，则代表已经订阅
-            return "取消订阅-成功-" + channel.remoteAddress();
+            //if not null, the client already subscribed a log file.
+            return String.format(Constant.SUCCESS_UNSUBSCRIBED, channel.remoteAddress());
         } else {
-            //若为空，代表不存在订阅
+            //if null, the client didn't subscribe any log file.
             return Constant.ERROR_NOT_SUBSCRIBED;
         }
     }
 
     /**
-     * 获取某个channel已经订阅的日志
+     * Get the subscribed log file of the specified channel
      *
-     * @param channel 需要获取已订阅日志的channel
-     * @return 若已订阅，则返回已订阅的日志书写器实例；否则返回false
+     * @param channel the specified channel
+     * @return if the specified channel subscribed, return the subscribed log file , otherwise return null
      */
     private LogWriter subscribed(final Channel channel) {
-        for (final LogWriter logWriter : map.values()) {
+        for (final LogWriter logWriter : filePathToInstanceMap.values()) {
             if (logWriter.contains(channel)) {
                 return logWriter;
             }
         }
         return null;
+    }
+
+    /**
+     * Judge a line of log file configuration file is valid or not
+     *
+     * @param line the line of log file configuration
+     * @return if valid return true, otherwise return null
+     */
+    private boolean isValidLogFile(final String line) {
+        return !line.isEmpty() &&
+                !line.startsWith(Constant.COMMENT_SYMBOL) &&
+                Files.exists(Paths.get(line));
     }
 }
