@@ -22,24 +22,25 @@ import java.util.logging.Logger;
 
 public final class Server {
 
-    private static final Logger logger = Logger.getLogger(Server.class.getName());
+    /**
+     * log
+     */
+    private static final Logger log = Logger.getLogger(Server.class.getName());
 
     /**
-     * 主方法
+     * Main method
      *
-     * @param args 命令行参数列表
+     * @param args Command line arguments
      */
     public static void main(String[] args) throws CertificateException, SSLException, InterruptedException {
-        if (Constant.LOG_FILE_CONF_PATH == null) {
-            System.out.println("Usage: java -DlogFile=/var/log/syslog -jar telogger");
-            System.exit(1);
-        }
+        log.info("Telogger booting");
 
-        logger.info("日志书写器-开始启动");
+        //Boot LogWriterManager
         LogWriterManager.INSTANCE.boot();
-        logger.info("日志书写器-启动完成");
+        //Init CommandManager
+        CommandManager.INSTANCE.init();
 
-        //启动服务端
+        //SSL encryption
         final SslContext sslContext;
         if (Constant.SSL) {
             SelfSignedCertificate ssc = new SelfSignedCertificate();
@@ -72,16 +73,18 @@ public final class Server {
                         }
                     });
 
-            //绑定端口，并阻塞至绑定完成
-            logger.info("绑定端口" + Constant.PORT + "-开始");
+            //Bind and start to accept incoming connections.
+            log.info("Bind port " + Constant.PORT + ", start");
             final ChannelFuture channelFuture = bootstrap.bind(Constant.PORT).sync();
-            logger.info("绑定端口" + Constant.PORT + "-完成");
+            log.info("Bind port " + Constant.PORT + ", completed");
 
-            //阻塞直至服务器套节字被关闭
+            //Block until server is closed.
             channelFuture.channel().closeFuture().sync();
         } finally {
+            //Shutdown thread pool
             boosGroup.shutdownGracefully();
             workerGroup.shutdownGracefully();
+            log.info("Telogger shutting down, bye");
         }
     }
 }
