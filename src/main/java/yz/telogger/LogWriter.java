@@ -10,9 +10,9 @@ import java.nio.file.Paths;
 import java.util.logging.Logger;
 
 /**
- * 日志书写器
+ * Log writer
  *
- * @author 袁臻
+ * @author yziyz
  * 2017/11/21 23:52
  */
 final class LogWriter {
@@ -30,12 +30,12 @@ final class LogWriter {
     private final Logger logger = Logger.getLogger(LogWriter.class.getName());
 
     /**
-     * 匹配器
+     * Channel matcher
      */
     private final SetChannelMatcher setChannelMatcher = new SetChannelMatcher();
 
     /**
-     * 构造方法
+     * Constructor
      */
     LogWriter(String filePath) {
         this.path = Paths.get(filePath);
@@ -43,9 +43,9 @@ final class LogWriter {
     }
 
     /**
-     * 将指定的channel加入匹配器
+     * Handle the subscribtion to this log writer by the specific channel
      *
-     * @param channel 指定的channel实例
+     * @param channel the specific channel
      */
     void subscribe(Channel channel) {
         setChannelMatcher.add(channel);
@@ -53,9 +53,9 @@ final class LogWriter {
     }
 
     /**
-     * 将指定的channel从匹配器中移除
+     * Handle the ubsubscribtion to this log writer by the specific channel
      *
-     * @param channel 指定的channel实例
+     * @param channel the specific channel
      */
     void unsubscribe(Channel channel) {
         setChannelMatcher.remove(channel);
@@ -63,77 +63,90 @@ final class LogWriter {
     }
 
     /**
-     * 检查状态
+     * Check the state of this log writer
      */
     private void check() {
         if (isNeedBoot()) {
-            logger.info("启动" + filePath);
+            logger.info("Boot-" + filePath);
             boot();
         } else if (isNeedShutDown()) {
-            logger.info("关闭" + filePath);
+            logger.info("Shutdown-" + filePath);
             shutdown();
         }
     }
 
     /**
-     * 是否需要启动
+     * Need to boot
      *
-     * @return 当且仅当未在工作中且存在订阅客户端时返回true，否则返回false
+     * @return true if and only if this log writer is not working and subscribed, otherwise false
      */
     private boolean isNeedBoot() {
         return !isWorking && !setChannelMatcher.isEmpty();
     }
 
     /**
-     * 是否需要关闭
+     * Need to shutdown
      *
-     * @return 当且仅当在工作中且不存在订阅客户端时返回true，否则返回false
+     * @return true if and only if this log writer is working and not subscribed, otherwise false
      */
     private boolean isNeedShutDown() {
         return isWorking && setChannelMatcher.isEmpty();
     }
 
     /**
-     * 启动
+     * Boot this log writer
+     * <p>
+     * start a thread to execute <code>work</code> method
      */
     private void boot() {
-        //创建线程
+        //create a thread
         thread = new Thread(this::work);
         thread.setName("Thread-" + filePath);
         thread.setDaemon(true);
-        //开启线程
+        //start the thread
         thread.start();
     }
 
     /**
-     * 关闭
+     * Shutdown this log writer
+     * <p>
+     * stop the <code>process</code> and the <code>thread</code>
      */
     private void shutdown() {
-        isWorking = false;
+        //stop the process
         if (process != null && process.isAlive()) {
             process.destroyForcibly();
             process = null;
         }
+        //stop the thread
         if (thread != null && !thread.isInterrupted()) {
             thread.interrupt();
             thread = null;
         }
     }
 
-    boolean contains(Channel o) {
-        return setChannelMatcher.matches(o);
+    /**
+     * Check the specific channel whether subscribed this log writer or not
+     *
+     * @param channel the specific channel
+     * @return true if and only if <code>setChannelMatcher</code> matches the specific channel, false otherwise
+     */
+    boolean contains(Channel channel) {
+        return setChannelMatcher.matches(channel);
     }
 
     /**
-     * 监听文件直至异常发生
+     * Work
+     * <p>
+     * Start a subprocess to execute <code>tail</code> command provided by the OS.
      */
     private void work() {
-        //设置isWorking为true
+        //change flag isWorking to true
         isWorking = true;
-        //等待至文件存在
+        //waiting until log file exists
         while (!Files.exists(path)) {
+            //if flag isWorking changed to false, return
             if (!isWorking) {
-                //若被关闭，结束
                 return;
             }
             try {
@@ -142,23 +155,23 @@ final class LogWriter {
                 e.printStackTrace();
             }
         }
-        //尝试读取文件内容
         try {
-            //创建进程
+            //create a subprocess
             process = Runtime.getRuntime()
                     .exec(String.format(Constant.TAIL_F_COMMAND, filePath));
-            logger.info("监听文件-" + filePath);
-            //监听进程的输出，阻塞至异常抛出或者被关闭输出
+            logger.info("Listen-" + filePath);
+            //get the output of the subprocess, and writes each line to channels subscribed this log writer
             new BufferedReader(new InputStreamReader(process.getInputStream()))
                     .lines()
                     .forEach(line -> ClientManager.INSTANCE.writeLine(line, setChannelMatcher));
         } catch (Exception e) {
-            logger.warning("监听文件-" + filePath + "-发生异常");
+            //exception occurred
+            logger.warning("Error-Listen " + filePath);
             e.printStackTrace();
         } finally {
-            //设置isWorking为false
+            //change flag isWorking to false
             isWorking = false;
-            //检查状态
+            //check state
             check();
         }
     }

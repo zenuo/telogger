@@ -9,6 +9,7 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.function.Function;
 import java.util.logging.Logger;
 import java.util.stream.Collector;
@@ -52,11 +53,18 @@ enum LogWriterManager {
         if (Files.exists(path)) {
             try {
                 //read lines and construct log writer instances
-                filePathToInstanceMap.putAll(Files.lines(path)
+                final ConcurrentMap<String, LogWriter> collect = Files.lines(path)
                         .map(String::trim)
                         .filter(this::isValidLogFile)
                         .map(LogWriter::new)
-                        .collect(Collectors.toConcurrentMap(LogWriter::getFilePath, Function.identity())));
+                        .collect(Collectors.toConcurrentMap(LogWriter::getFilePath, Function.identity()));
+                //if collect is not empty
+                if (!collect.isEmpty()) {
+                    //clear old content
+                    filePathToInstanceMap.clear();
+                    //put all new content
+                    filePathToInstanceMap.putAll(collect);
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -100,7 +108,7 @@ enum LogWriterManager {
     /**
      * Subscribe a log file
      *
-     * @param channel   the channel of the client requested
+     * @param channel   the channel instance of the client requested
      * @param arguments arguments string list
      * @return message return to client
      */
@@ -146,10 +154,10 @@ enum LogWriterManager {
     /**
      * Unsubscribe
      *
-     * @param channel the channel instance of the client that would unsubscribe.
+     * @param channel the channel instance of the client requested
      * @return the message to return to the client.
      */
-    String unsunscribe(final Channel channel) {
+    String unsubscribe(final Channel channel) {
         log.info("Unsubscribe-" + channel.remoteAddress());
         //get the subscribed log writer.
         final LogWriter subscribed = subscribed(channel);
@@ -166,7 +174,7 @@ enum LogWriterManager {
     /**
      * Get the subscribed log file of the specified channel
      *
-     * @param channel the specified channel
+     * @param channel the channel instance of the client requested
      * @return if the specified channel subscribed, return the subscribed log file , otherwise return null
      */
     private LogWriter subscribed(final Channel channel) {

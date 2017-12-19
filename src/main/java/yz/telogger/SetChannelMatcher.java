@@ -5,9 +5,9 @@ import io.netty.channel.group.ChannelMatcher;
 import io.netty.util.internal.ConcurrentSet;
 
 /**
- * 集合channel匹配器
+ * Matcher of set
  *
- * @author 袁臻
+ * @author yziyz
  * 2017/12/09 21:37
  */
 public final class SetChannelMatcher implements ChannelMatcher {

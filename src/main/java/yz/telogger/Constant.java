@@ -50,6 +50,8 @@ final class Constant {
 
     static final String COMMAND_INTERNAL_QUIT = "quit###exit the session.";
 
+    static final String COMMAND_INTERNAL_RELOAD = "reload###re-opening log files.";
+
     /**
      * Error messages
      */

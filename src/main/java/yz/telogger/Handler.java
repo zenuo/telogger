@@ -26,7 +26,7 @@ final class Handler extends SimpleChannelInboundHandler<String> {
         //add client
         ClientManager.INSTANCE.add(ctx.channel());
         //send welcome and help message to client
-        ctx.channel().writeAndFlush(Constant.MESSAGE_HELLO + Constant.NEW_LINE + CommandManager.INSTANCE.help());
+        ctx.channel().writeAndFlush(Constant.MESSAGE_HELLO + Constant.NEW_LINE + CommandManager.INSTANCE.help(false));
         log.info("Online-" + ctx.channel().remoteAddress() + "\nOnline client count: " + ClientManager.INSTANCE.count());
     }
 
