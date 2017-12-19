@@ -5,16 +5,21 @@
 WORK_DIRECTORY="/home/user/project/telogger"
 #Jar file name
 JAR_FILE_PATH="/home/user/project/telogger/target/telogger-1.0-jar-with-dependencies.jar"
-#Boot type, "start" or "restart"
-TYPE=""
 #Log file path
 LOG_FILE_PATH="log"
-#Command
-CMD="java -Dfile.encoding=UTF8 -Duser.language=en -Duser.region=US -Dport=8007 -Dssl=true -DlogFile=D:\omts\log\cato.log -jar "$JAR_FILE_PATH
-#PID File
+#PID File path
 PID_FILE_PATH="pid"
+#SSL encryption, uncomment this if open it
+SSL="-Dssl=true"
+#Port to listen, default 8007
+PORT=8007
+#Command to run jar file
+CMD="java -Dport=$PORT $SSL -jar $JAR_FILE_PATH"
+
 
 ##Boot
+#Boot type, "start" or "restart"
+TYPE=""
 #change working directory
 cd $WORK_DIRECTORY
 #judge jar file exists or not
