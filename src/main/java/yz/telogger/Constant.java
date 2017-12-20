@@ -72,7 +72,7 @@ final class Constant {
      */
     static final String SUCCESS_SUBSCRIBED = "Success-Subscribed log file: %s\r\n";
 
-    static final String SUCCESS_UNSUBSCRIBED = "Success-Unsubscribed log file: %s\r\n";
+    static final String SUCCESS_UNSUBSCRIBED = "Success-Unsubscribed log file.\r\n";
 
     /**
      * Regex pattern
