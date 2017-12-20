@@ -55,24 +55,24 @@ final class Constant {
     /**
      * Error messages
      */
-    static final String ERROR_COMMAND_NOT_FOUND = "Error-command not found: %s";
+    static final String ERROR_COMMAND_NOT_FOUND = "Error-command not found: %s\r\n";
 
-    static final String ERROR_FILE_NOT_FOUND = "Error-file not found: %s";
+    static final String ERROR_FILE_NOT_FOUND = "Error-file not found: %s\r\n";
 
-    static final String ERROR_NOT_SUBSCRIBED = "Error-Sorry, you didn't subscribed any log files.";
+    static final String ERROR_NOT_SUBSCRIBED = "Error-Sorry, you didn't subscribed any log files.\r\n";
 
     static final String ERROR_INVALID_ARGUMENTS = "Error-Invalid arguments: %s, please check the command by " +
-            "getting help message, and retry.";
+            "getting help message, and retry.\r\n";
 
     static final String ERROR_MULTIPLE_SUBSCRIBTION = "Error-Sorry, you already subscribed a log file, please unsubscribe " +
-            "it and retry";
+            "it and retry.\r\n";
 
     /**
      * Success messages
      */
-    static final String SUCCESS_SUBSCRIBED = "Success-Subscribed log file: %s";
+    static final String SUCCESS_SUBSCRIBED = "Success-Subscribed log file: %s\r\n";
 
-    static final String SUCCESS_UNSUBSCRIBED = "Success-Unsubscribed log file: %s";
+    static final String SUCCESS_UNSUBSCRIBED = "Success-Unsubscribed log file: %s\r\n";
 
     /**
      * Regex pattern
