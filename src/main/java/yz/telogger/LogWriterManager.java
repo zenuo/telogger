@@ -164,7 +164,7 @@ enum LogWriterManager {
         if (subscribed != null) {
             subscribed.unsubscribe(channel);
             //if not null, the client already subscribed a log file.
-            return String.format(Constant.SUCCESS_UNSUBSCRIBED, channel.remoteAddress());
+            return Constant.SUCCESS_UNSUBSCRIBED;
         } else {
             //if null, the client didn't subscribe any log file.
             return Constant.ERROR_NOT_SUBSCRIBED;
