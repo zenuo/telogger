@@ -12,7 +12,7 @@ import java.util.logging.Logger;
 /**
  * Log writer
  *
- * @author yziyz
+ * @author zenuo
  * 2017/11/21 23:52
  */
 final class LogWriter {

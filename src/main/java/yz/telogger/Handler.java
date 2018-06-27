@@ -11,7 +11,7 @@ import java.util.logging.Logger;
 /**
  * The channel inbound handler
  *
- * @author yziyz
+ * @author zenuo
  * 2017/11/21 00:56
  */
 final class Handler extends SimpleChannelInboundHandler<String> {
@@ -22,7 +22,7 @@ final class Handler extends SimpleChannelInboundHandler<String> {
     private final Logger log = Logger.getLogger(Handler.class.getName());
 
     @Override
-    public void channelActive(ChannelHandlerContext ctx) throws Exception {
+    public void channelActive(ChannelHandlerContext ctx) {
         //add client
         ClientManager.INSTANCE.add(ctx.channel());
         //send welcome and help message to client
@@ -31,21 +31,21 @@ final class Handler extends SimpleChannelInboundHandler<String> {
     }
 
     @Override
-    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+    public void channelInactive(ChannelHandlerContext ctx) {
         //remove client
         ClientManager.INSTANCE.remove(ctx.channel());
         log.info("Offline-" + ctx.channel().remoteAddress() + "\nOnline client count: " + ClientManager.INSTANCE.count());
     }
 
     @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
         log.warning("Error-" + ctx.channel().remoteAddress() + " exception occurred");
         cause.printStackTrace();
         ctx.close();
     }
 
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx, String msg) throws Exception {
+    protected void channelRead0(ChannelHandlerContext ctx, String msg) {
         final String trimMsg = msg.trim();
         if (trimMsg.length() != 0) {
             if (Objects.equals(trimMsg.toLowerCase(), "quit")) {
@@ -61,7 +61,7 @@ final class Handler extends SimpleChannelInboundHandler<String> {
     }
 
     @Override
-    public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
+    public void userEventTriggered(ChannelHandlerContext ctx, Object evt) {
         //Idle state event triggered
         if (evt instanceof IdleStateEvent) {
             final IdleStateEvent idleStateEvent = (IdleStateEvent) evt;

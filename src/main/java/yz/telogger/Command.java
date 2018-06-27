@@ -3,7 +3,7 @@ package yz.telogger;
 /**
  * Command class
  *
- * @author yziyz
+ * @author zenuo
  * 2017/12/05 18:04
  */
 public final class Command {

@@ -7,7 +7,7 @@ import io.netty.util.internal.ConcurrentSet;
 /**
  * Matcher of set
  *
- * @author yziyz
+ * @author zenuo
  * 2017/12/09 21:37
  */
 public final class SetChannelMatcher implements ChannelMatcher {

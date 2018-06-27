@@ -6,7 +6,7 @@ import java.util.regex.Pattern;
 /**
  * Constant class
  *
- * @author yziyz
+ * @author zenuo
  * 2017/11/21 23:55
  */
 final class Constant {

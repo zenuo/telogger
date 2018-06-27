@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 /**
  * Log writer manager
  *
- * @author yziyz
+ * @author zenuo
  * 2017/12/06 16:32
  */
 enum LogWriterManager {

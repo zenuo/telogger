@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 /**
  * The manager of command, singleton.
  *
- * @author yziyz
+ * @author zenuo
  * 2017/12/05 18:01
  */
 public enum CommandManager {

@@ -11,7 +11,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * Client manager
  *
- * @author yziyz
+ * @author zenuo
  * 2017/11/21 23:46
  */
 public enum ClientManager {
