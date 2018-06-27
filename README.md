@@ -1,15 +1,15 @@
 # Telogger
 
 A simply shell server, you can get these function below from this:
-* Dynamic log file contents powered by `tail -f`
+* Dynamic log file contents by `tail -f`
 * Custom commands
-* SSL encryption session
+* SSL encryption session (if configured)
 
 ## Getting started
 
 ### Prerequisites
 
-* Java SE 8
+* Java SE 10
 * `tail` utility
 
 > `tail` utility is provided by UNIX like operation systems; On Microsoft Windows, you can get it by [MinGW](http://www.mingw.org/) or other.
