@@ -80,7 +80,7 @@ quit                           exit the session.
 date                           echo time of now
 
 Log files:
-/home/user/log.txt
+/home/user/cato/log.txt
 ```
 
 ### Built With
