@@ -10,7 +10,7 @@ import io.netty.util.internal.ConcurrentSet;
  * @author zenuo
  * 2017/12/09 21:37
  */
-public final class SetChannelMatcher implements ChannelMatcher {
+final class SetChannelMatcher implements ChannelMatcher {
 
     private final ConcurrentSet<Channel> set = new ConcurrentSet<>();
 

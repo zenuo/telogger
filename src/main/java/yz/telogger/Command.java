@@ -6,7 +6,7 @@ package yz.telogger;
  * @author zenuo
  * 2017/12/05 18:04
  */
-public final class Command {
+final class Command {
 
     private String name;
 

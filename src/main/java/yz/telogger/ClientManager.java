@@ -14,7 +14,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @author zenuo
  * 2017/11/21 23:46
  */
-public enum ClientManager {
+enum ClientManager {
 
     INSTANCE;
 

@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
  * @author zenuo
  * 2017/12/05 18:01
  */
-public enum CommandManager {
+enum CommandManager {
 
     /**
      * Instance of command manager.
