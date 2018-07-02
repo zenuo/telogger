@@ -1,6 +1,7 @@
 package yz.telogger;
 
 import io.netty.channel.Channel;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -16,7 +17,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
-import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
@@ -27,17 +27,13 @@ import java.util.stream.Collectors;
  * @author zenuo
  * 2017/12/05 18:01
  */
+@Slf4j
 enum CommandManager {
 
     /**
      * Instance of command manager.
      */
     INSTANCE;
-
-    /**
-     * Log of this instance.
-     */
-    private final Logger log = Logger.getLogger(CommandManager.class.getName());
 
     /**
      * The mapping from command name to its instance
@@ -117,7 +113,7 @@ enum CommandManager {
                     externalCommandNameToInstanceMap.putAll(collect);
                 }
             } catch (IOException e) {
-                log.warning("Exception occurred while loading external command:");
+                log.warn("Exception occurred while loading external command:");
                 e.printStackTrace();
             }
         } else {
@@ -262,9 +258,7 @@ enum CommandManager {
             //blocking until process terminated
             process.waitFor(20000L, TimeUnit.MILLISECONDS);
         } catch (Exception e) {
-            //exception occurred
-            log.warning("Error-Command-" + command.toString() + "-arguments-" + arguments.toString());
-            e.printStackTrace();
+            log.warn("Command {}, arguments {}", command.toString(), arguments.toString(), e);
         } finally {
             //clear process
             if (process != null && process.isAlive()) {

@@ -5,6 +5,7 @@ import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.ChannelMatcher;
 import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.util.concurrent.GlobalEventExecutor;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -14,38 +15,43 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @author zenuo
  * 2017/11/21 23:46
  */
+@Slf4j
 enum ClientManager {
 
     INSTANCE;
 
     /**
-     * Channel group
+     * 通道组
      */
     private final ChannelGroup group = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
 
     /**
-     * Counter
+     * 计数器
      */
     private final AtomicInteger count = new AtomicInteger(0);
 
     /**
-     * Write the specific message to channels which matches the specific matcher
+     * 将消息写到匹配的通道
      *
-     * @param msg     the specific message
-     * @param matcher the specific matcher
+     * @param msg     指定的消息
+     * @param matcher 目标通道的匹配器实例
      */
     void writeLine(final String msg, final ChannelMatcher matcher) {
-        group.writeAndFlush(msg.concat(Constant.NEW_LINE), matcher);
+        group.write(msg, matcher);
+        group.writeAndFlush(Constant.NEW_LINE, matcher);
     }
 
     /**
-     * Add the specific channel to channel group
+     * 添加通道
      *
-     * @param channel the specific channel
+     * @param channel 指定的通道实例
      */
     void add(final Channel channel) {
         group.add(channel);
         count.incrementAndGet();
+        log.info("Online: {}\nOnline client count: {}",
+                channel.remoteAddress(),
+                count.get());
     }
 
     /**
@@ -60,9 +66,8 @@ enum ClientManager {
         group.remove(channel);
         //decrement counter
         count.decrementAndGet();
-    }
-
-    int count() {
-        return count.get();
+        log.info("Offline: {}\nOnline client count: {}",
+                channel.remoteAddress(),
+                count.get());
     }
 }

@@ -1,38 +1,32 @@
 package yz.telogger;
 
 import io.netty.channel.Channel;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.logging.Logger;
 
 /**
- * Log writer
+ * 日志书写器，每一个被订阅的日志文件对应一个本类实例
  *
  * @author zenuo
  * 2017/11/21 23:52
  */
+@Slf4j
 final class LogWriter {
 
-    private Thread thread = null;
-
-    private Process process = null;
-
-    private boolean isWorking = false;
-
     private final String filePath;
-
     private final Path path;
-
-    private final Logger logger = Logger.getLogger(LogWriter.class.getName());
-
     /**
      * Channel matcher
      */
     private final SetChannelMatcher setChannelMatcher = new SetChannelMatcher();
+    private volatile Thread thread = null;
+    private volatile Process process = null;
+    private volatile boolean isWorking = false;
 
     /**
      * Constructor
@@ -67,10 +61,10 @@ final class LogWriter {
      */
     private void check() {
         if (isNeedBoot()) {
-            logger.info("Boot-" + filePath);
+            log.info("Boot-" + filePath);
             boot();
         } else if (isNeedShutDown()) {
-            logger.info("Shutdown-" + filePath);
+            log.info("Shutdown-" + filePath);
             shutdown();
         }
     }
@@ -159,19 +153,17 @@ final class LogWriter {
             //create a subprocess
             process = Runtime.getRuntime()
                     .exec(String.format(Constant.TAIL_F_COMMAND, filePath));
-            logger.info("Listen-" + filePath);
+            log.info("Listen {}", filePath);
             //get the output of the subprocess, and writes each line to channels subscribed this log writer
             new BufferedReader(new InputStreamReader(process.getInputStream()))
                     .lines()
                     .forEach(line -> ClientManager.INSTANCE.writeLine(line, setChannelMatcher));
         } catch (Exception e) {
-            //exception occurred
-            logger.warning("Error-Listen " + filePath);
-            e.printStackTrace();
+            log.warn("Listen {}", filePath, e);
         } finally {
-            //change flag isWorking to false
+            //改变isWorking
             isWorking = false;
-            //check state
+            //检查状态
             check();
         }
     }

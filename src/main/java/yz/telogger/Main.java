@@ -14,33 +14,23 @@ import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.util.SelfSignedCertificate;
 import io.netty.handler.timeout.IdleStateHandler;
+import lombok.extern.slf4j.Slf4j;
 
 import javax.net.ssl.SSLException;
 import java.nio.charset.StandardCharsets;
 import java.security.cert.CertificateException;
-import java.util.logging.Logger;
 
-public final class Server {
-
-    /**
-     * log
-     */
-    private static final Logger log = Logger.getLogger(Server.class.getName());
-
-    /**
-     * Main method
-     *
-     * @param args Command line arguments
-     */
+@Slf4j
+public final class Main {
     public static void main(String[] args) throws CertificateException, SSLException, InterruptedException {
         log.info("Telogger booting");
 
-        //Initialize LogWriterManager
+        //初始化LogWriterManager
         LogWriterManager.INSTANCE.init();
-        //Initialize CommandManager
+        //初始化CommandManager
         CommandManager.INSTANCE.init();
 
-        //SSL encryption
+        //SSL加密
         final SslContext sslContext;
         if (Constant.SSL) {
             SelfSignedCertificate ssc = new SelfSignedCertificate();
@@ -59,10 +49,8 @@ public final class Server {
                     .option(ChannelOption.SO_BACKLOG, 100)
                     .childHandler(new ChannelInitializer<SocketChannel>() {
                         @Override
-                        protected void initChannel(SocketChannel socketChannel) throws Exception {
-
+                        protected void initChannel(SocketChannel socketChannel) {
                             final ChannelPipeline pipeline = socketChannel.pipeline();
-
                             if (sslContext != null) {
                                 pipeline.addLast(sslContext.newHandler(socketChannel.alloc()));
                             }
@@ -72,19 +60,17 @@ public final class Server {
                                     .addLast(new Handler());
                         }
                     });
-
-            //Bind and start to accept incoming connections.
+            //绑定端口，并接受连接
             log.info("Bind port " + Constant.PORT + ", start");
-            final ChannelFuture channelFuture = bootstrap.bind(Constant.PORT).sync();
+            final ChannelFuture channelFuture = bootstrap.bind("0.0.0.0", Constant.PORT).sync();
             log.info("Bind port " + Constant.PORT + ", completed");
-
-            //Block until server is closed.
+            //阻塞直至socket关闭
             channelFuture.channel().closeFuture().sync();
         } finally {
-            //Shutdown thread pool
+            //关闭线程池
             boosGroup.shutdownGracefully();
             workerGroup.shutdownGracefully();
-            log.info("Telogger shutting down, bye");
+            log.info("Shutdown");
         }
     }
 }

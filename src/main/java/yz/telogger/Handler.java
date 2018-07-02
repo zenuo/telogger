@@ -4,42 +4,36 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.Objects;
-import java.util.logging.Logger;
 
 /**
- * The channel inbound handler
+ * 通道入站处理器
  *
  * @author zenuo
  * 2017/11/21 00:56
  */
+@Slf4j
 final class Handler extends SimpleChannelInboundHandler<String> {
-
-    /**
-     * Log
-     */
-    private final Logger log = Logger.getLogger(Handler.class.getName());
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) {
-        //add client
+        //添加客户端
         ClientManager.INSTANCE.add(ctx.channel());
         //send welcome and help message to client
         ctx.channel().writeAndFlush(Constant.MESSAGE_HELLO + Constant.NEW_LINE + CommandManager.INSTANCE.help(false));
-        log.info("Online-" + ctx.channel().remoteAddress() + "\nOnline client count: " + ClientManager.INSTANCE.count());
     }
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) {
-        //remove client
+        //移除客户端
         ClientManager.INSTANCE.remove(ctx.channel());
-        log.info("Offline-" + ctx.channel().remoteAddress() + "\nOnline client count: " + ClientManager.INSTANCE.count());
     }
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-        log.warning("Error-" + ctx.channel().remoteAddress() + " exception occurred");
+        log.warn("Error-" + ctx.channel().remoteAddress() + " exception occurred");
         cause.printStackTrace();
         ctx.close();
     }

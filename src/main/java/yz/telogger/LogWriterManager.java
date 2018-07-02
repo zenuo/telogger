@@ -1,6 +1,7 @@
 package yz.telogger;
 
 import io.netty.channel.Channel;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -11,7 +12,6 @@ import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.function.Function;
-import java.util.logging.Logger;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
@@ -21,17 +21,13 @@ import java.util.stream.Collectors;
  * @author zenuo
  * 2017/12/06 16:32
  */
+@Slf4j
 enum LogWriterManager {
 
     /**
      * Instance
      */
     INSTANCE;
-
-    /**
-     * Log
-     */
-    private final Logger log = Logger.getLogger(LogWriterManager.class.getName());
 
     /**
      * The mapping from file path to its instance
