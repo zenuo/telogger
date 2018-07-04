@@ -4,7 +4,7 @@ import sys
 import time
 
 __PID_COMMAND = "ps -ef | grep telogger.jar | grep -v grep | awk '{print $2}'"
-__START_COMMAND = 'nohup java -Xms64m -Xmx64m -Dport=8007 -server -jar telogger.jar >> log 2>&1 &'
+__START_COMMAND = 'nohup java -Xms64m -Xmx64m -server -jar telogger.jar >> /dev/null 2>&1 &'
 __STOP_COMMAND = 'kill %s'
 __HELP = 'Arguments:\n    start\n    restart\n    stop\n'
 
