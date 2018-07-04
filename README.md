@@ -18,7 +18,7 @@ A simply shell server, you can get these function below from this:
 ### Installing
 Clone source to local
 ```
-git clone https://github.com/zenuo/telogger.git
+$ git clone https://github.com/zenuo/telogger.git
 ```
 DIY, and compile
 ```
