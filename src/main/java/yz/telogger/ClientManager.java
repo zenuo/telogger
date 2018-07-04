@@ -38,7 +38,7 @@ enum ClientManager {
      */
     void writeLine(final String msg, final ChannelMatcher matcher) {
         group.write(msg, matcher);
-        group.writeAndFlush(Constant.NEW_LINE, matcher);
+        group.writeAndFlush(Constants.NEW_LINE, matcher);
     }
 
     /**

@@ -19,7 +19,7 @@ final class Command {
     private boolean isInternal;
 
     Command(final String line, final boolean isInternal) {
-        final String[] split = line.split(Constant.EXTERNAL_COMMAND_DELIMITER);
+        final String[] split = line.split(Constants.EXTERNAL_COMMAND_DELIMITER);
         this.name = split[0];
         this.command = split[1];
         this.workingDirectory = split[2];

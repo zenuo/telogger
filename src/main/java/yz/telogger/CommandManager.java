@@ -45,7 +45,7 @@ enum CommandManager {
     /**
      * The help message.
      */
-    private String help = null;
+    private volatile String help = null;
 
     /**
      * Initialize, load command to commandNameToInstanceMap.
@@ -75,15 +75,15 @@ enum CommandManager {
     private void loadInternalCommand() {
         //load internal command
         //command 'sub'
-        final Command subscribe = new Command(Constant.COMMAND_INTERNAL_SUBSCRIBE, true);
+        final Command subscribe = new Command(Constants.COMMAND_INTERNAL_SUBSCRIBE, true);
         //command 'unsub'
-        final Command unsubscribe = new Command(Constant.COMMAND_INTERNAL_UNSUBSCRIBE, true);
+        final Command unsubscribe = new Command(Constants.COMMAND_INTERNAL_UNSUBSCRIBE, true);
         //command 'help'
-        final Command help = new Command(Constant.COMMAND_INTERNAL_HELP, true);
+        final Command help = new Command(Constants.COMMAND_INTERNAL_HELP, true);
         //command 'quit'
-        final Command quit = new Command(Constant.COMMAND_INTERNAL_QUIT, true);
+        final Command quit = new Command(Constants.COMMAND_INTERNAL_QUIT, true);
         //command 'reload'
-        final Command reload = new Command(Constant.COMMAND_INTERNAL_RELOAD, true);
+        final Command reload = new Command(Constants.COMMAND_INTERNAL_RELOAD, true);
         internalCommandNameToInstanceMap.put(subscribe.getName(), subscribe);
         internalCommandNameToInstanceMap.put(unsubscribe.getName(), unsubscribe);
         internalCommandNameToInstanceMap.put(help.getName(), help);
@@ -97,7 +97,7 @@ enum CommandManager {
     void loadExternalCommand() {
         //load external command
         //if command configuration file exists, load it
-        final Path path = Paths.get(Constant.COMMAND_CONF_PATH);
+        final Path path = Paths.get(Constants.CONF_PATH_COMMAND);
         if (Files.exists(path)) {
             try {
                 final ConcurrentMap<String, Command> collect = Files.lines(path)
@@ -132,7 +132,7 @@ enum CommandManager {
         if (help == null || reload) {
             //new StringBuilder
             final StringBuilder stringBuilder = new StringBuilder("Commands:")
-                    .append(Constant.NEW_LINE);
+                    .append(Constants.NEW_LINE);
             //append commands info
             stringBuilder.append(internalCommandNameToInstanceMap.values()
                     .stream()
@@ -154,7 +154,7 @@ enum CommandManager {
                     )));
             //assign stringBuilder to help
             help = stringBuilder
-                    .append(Constant.NEW_LINE)
+                    .append(Constants.NEW_LINE)
                     .append(LogWriterManager.INSTANCE.filePaths())
                     .toString();
         }
@@ -168,7 +168,7 @@ enum CommandManager {
      * @return message that send to the client
      */
     String reload(final Channel channel) {
-        log.info("Reload-" + channel.remoteAddress());
+        log.info("Reload from " + channel.remoteAddress());
         LogWriterManager.INSTANCE.init();
         CommandManager.INSTANCE.init();
         return help(true);
@@ -183,11 +183,11 @@ enum CommandManager {
      */
     String exec(final Channel channel, final String commandLineString) {
         //split commandLineString by space
-        final List<String> segments = new ArrayList<>(Arrays.asList(commandLineString.split(" ")));
+        final List<String> tokens = new ArrayList<>(Arrays.asList(commandLineString.split(" ")));
         //get command name
-        final String commandString = segments.remove(0);
-        //log
-        log.info("Command-" + channel.remoteAddress() + "-" + commandLineString);
+        final String commandString = tokens.remove(0);
+
+        log.info("Command '{}' from {}", commandLineString, channel.remoteAddress());
         //get command instance
         Command command = internalCommandNameToInstanceMap.get(commandString);
         if (command == null) {
@@ -198,14 +198,14 @@ enum CommandManager {
             //found
             if (command.isInternal()) {
                 //internal command
-                return execInternalCommand(channel, commandString, segments);
+                return execInternalCommand(channel, commandString, tokens);
             } else {
                 //external command
-                return execExternalCommand(command, segments);
+                return execExternalCommand(command, tokens);
             }
         } else {
             //not found
-            return String.format(Constant.ERROR_COMMAND_NOT_FOUND, commandString);
+            return String.format(Constants.ERROR_COMMAND_NOT_FOUND, commandString);
         }
     }
 
@@ -228,7 +228,7 @@ enum CommandManager {
             case "reload":
                 return reload(channel);
             default:
-                return String.format(Constant.ERROR_COMMAND_NOT_FOUND, commandString);
+                return String.format(Constants.ERROR_COMMAND_NOT_FOUND, commandString);
         }
     }
 
@@ -254,7 +254,7 @@ enum CommandManager {
             //get stdout lines, blocking until process returned
             new BufferedReader(new InputStreamReader(process.getInputStream()))
                     .lines()
-                    .forEach(line -> stringBuilder.append(line).append(Constant.NEW_LINE));
+                    .forEach(line -> stringBuilder.append(line).append(Constants.NEW_LINE));
             //blocking until process terminated
             process.waitFor(20000L, TimeUnit.MILLISECONDS);
         } catch (Exception e) {
@@ -276,8 +276,8 @@ enum CommandManager {
      * @return true if valid, false otherwise
      */
     private boolean isValidExternalCommand(final String line) {
-        if (!line.isEmpty() && !line.startsWith(Constant.COMMENT_SYMBOL)) {
-            final Matcher matcher = Constant.PATTERN_EXTERNAL_COMMAND.matcher(line);
+        if (!line.isEmpty() && !line.startsWith(Constants.COMMENT_SYMBOL)) {
+            final Matcher matcher = Constants.PATTERN_EXTERNAL_COMMAND.matcher(line);
             final boolean lineMatches = matcher.find();
             final boolean workingDirectoryExists = Paths.get(matcher.group("workingDirectory")).toFile().exists();
             return lineMatches && workingDirectoryExists;

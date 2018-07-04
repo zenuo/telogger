@@ -5,9 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 /**
  * 日志书写器，每一个被订阅的日志文件对应一个本类实例
@@ -19,9 +16,8 @@ import java.nio.file.Paths;
 final class LogWriter {
 
     private final String filePath;
-    private final Path path;
     /**
-     * Channel matcher
+     * 通道匹配器
      */
     private final SetChannelMatcher setChannelMatcher = new SetChannelMatcher();
     private volatile Thread thread = null;
@@ -29,17 +25,16 @@ final class LogWriter {
     private volatile boolean isWorking = false;
 
     /**
-     * Constructor
+     * 构造方法
      */
     LogWriter(String filePath) {
-        this.path = Paths.get(filePath);
         this.filePath = filePath;
     }
 
     /**
-     * Handle the subscribtion to this log writer by the specific channel
+     * 订阅
      *
-     * @param channel the specific channel
+     * @param channel 订阅此日志文件的通道实例
      */
     void subscribe(Channel channel) {
         setChannelMatcher.add(channel);
@@ -47,9 +42,9 @@ final class LogWriter {
     }
 
     /**
-     * Handle the ubsubscribtion to this log writer by the specific channel
+     * 取消订阅
      *
-     * @param channel the specific channel
+     * @param channel 取消订阅此日志文件的通道实例
      */
     void unsubscribe(Channel channel) {
         setChannelMatcher.remove(channel);
@@ -57,20 +52,20 @@ final class LogWriter {
     }
 
     /**
-     * Check the state of this log writer
+     * 检查状态
      */
     private void check() {
         if (isNeedBoot()) {
-            log.info("Boot-" + filePath);
+            log.info("Boot " + filePath);
             boot();
         } else if (isNeedShutDown()) {
-            log.info("Shutdown-" + filePath);
+            log.info("Shutdown " + filePath);
             shutdown();
         }
     }
 
     /**
-     * Need to boot
+     * 是否需要启动
      *
      * @return true if and only if this log writer is not working and subscribed, otherwise false
      */
@@ -79,7 +74,7 @@ final class LogWriter {
     }
 
     /**
-     * Need to shutdown
+     * 是否需要关闭
      *
      * @return true if and only if this log writer is working and not subscribed, otherwise false
      */
@@ -90,11 +85,11 @@ final class LogWriter {
     /**
      * Boot this log writer
      * <p>
-     * start a thread to execute <code>work</code> method
+     * start a thread to execute <code>tail</code> method
      */
     private void boot() {
         //create a thread
-        thread = new Thread(this::work);
+        thread = new Thread(this::tail);
         thread.setName("Thread-" + filePath);
         thread.setDaemon(true);
         //start the thread
@@ -130,37 +125,24 @@ final class LogWriter {
     }
 
     /**
-     * Work
-     * <p>
-     * Start a subprocess to execute <code>tail</code> command provided by the OS.
+     * 创建一个子进程执行 <code>tail</code> 命令
      */
-    private void work() {
+    private void tail() {
         //change flag isWorking to true
         isWorking = true;
-        //waiting until log file exists
-        while (!Files.exists(path)) {
-            //if flag isWorking changed to false, return
-            if (!isWorking) {
-                return;
-            }
-            try {
-                Thread.sleep(2000L);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
         try {
-            //create a subprocess
+            //创建子进程
             process = Runtime.getRuntime()
-                    .exec(String.format(Constant.TAIL_F_COMMAND, filePath));
+                    .exec(String.format(Constants.TAIL_F_COMMAND_TEMPLATE, filePath));
             log.info("Listen {}", filePath);
-            //get the output of the subprocess, and writes each line to channels subscribed this log writer
+            //获取子进程的输出，并将每一行写至订阅本文件的通道
             new BufferedReader(new InputStreamReader(process.getInputStream()))
                     .lines()
                     .forEach(line -> ClientManager.INSTANCE.writeLine(line, setChannelMatcher));
         } catch (Exception e) {
-            log.warn("Listen {}", filePath, e);
+            log.warn("Listen " + filePath, e);
         } finally {
+            log.info("Exit listen " + filePath);
             //改变isWorking
             isWorking = false;
             //检查状态

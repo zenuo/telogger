@@ -22,7 +22,7 @@ final class Handler extends SimpleChannelInboundHandler<String> {
         //添加客户端
         ClientManager.INSTANCE.add(ctx.channel());
         //send welcome and help message to client
-        ctx.channel().writeAndFlush(Constant.MESSAGE_HELLO + Constant.NEW_LINE + CommandManager.INSTANCE.help(false));
+        ctx.channel().writeAndFlush(Constants.MESSAGE_HELLO + Constants.NEW_LINE + CommandManager.INSTANCE.help(false));
     }
 
     @Override
@@ -44,7 +44,7 @@ final class Handler extends SimpleChannelInboundHandler<String> {
         if (trimMsg.length() != 0) {
             if (Objects.equals(trimMsg.toLowerCase(), "quit")) {
                 //打印再见信息
-                ctx.channel().writeAndFlush(Constant.MESSAGE_BYE);
+                ctx.channel().writeAndFlush(Constants.MESSAGE_BYE);
                 //关闭通道
                 ctx.channel().close();
             } else {
@@ -60,7 +60,7 @@ final class Handler extends SimpleChannelInboundHandler<String> {
         if (evt instanceof IdleStateEvent) {
             final IdleStateEvent idleStateEvent = (IdleStateEvent) evt;
             if (idleStateEvent.state() == IdleState.WRITER_IDLE) {
-                ctx.channel().writeAndFlush(Constant.MESSAGE_BYE);
+                ctx.channel().writeAndFlush(Constants.MESSAGE_BYE);
                 //close channel
                 ctx.channel().close();
             }

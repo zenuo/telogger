@@ -37,14 +37,14 @@ enum LogWriterManager {
     /**
      * Message of file path
      */
-    private String filePaths = null;
+    private volatile String filePaths = null;
 
     /**
      * Initialize
      */
     void init() {
         //path of log files configuration file
-        final Path path = Paths.get(Constant.LOG_FILE_CONF_PATH);
+        final Path path = Paths.get(Constants.CONF_PATH_LOG_FILE);
         //if file exists
         if (Files.exists(path)) {
             try {
@@ -67,15 +67,16 @@ enum LogWriterManager {
         }
         //judge whether the filePathToInstanceMap is empty or not
         if (filePathToInstanceMap.isEmpty()) {
-            //if empty, throw exception
-            throw new IllegalStateException("No log file configured, exit now.");
+            //if empty, exit
+            log.error("No log file configured");
+            System.exit(1);
         } else {
             //print log file list
             final List<String> filePathList = filePathToInstanceMap.values()
                     .stream()
                     .map(LogWriter::getFilePath)
                     .collect(Collectors.toList());
-            log.info("Log files list: " + filePathList.toString());
+            log.info("Log files :" + filePathList.toString());
         }
     }
 
@@ -88,14 +89,14 @@ enum LogWriterManager {
         //lazy initialize
         if (filePaths == null) {
             final StringBuilder stringBuilder = new StringBuilder("Log files:")
-                    .append(Constant.NEW_LINE);
+                    .append(Constants.NEW_LINE);
             stringBuilder.append(filePathToInstanceMap.values().stream().collect(Collector.of(
                     StringBuilder::new,
-                    (StringBuilder sb, LogWriter l) -> sb.append(l.getFilePath()).append(Constant.NEW_LINE),
+                    (StringBuilder sb, LogWriter l) -> sb.append(l.getFilePath()).append(Constants.NEW_LINE),
                     StringBuilder::append,
                     Collector.Characteristics.IDENTITY_FINISH
             )));
-            filePaths = stringBuilder.append(Constant.NEW_LINE).toString();
+            filePaths = stringBuilder.append(Constants.NEW_LINE).toString();
         }
         //return
         return filePaths;
@@ -109,7 +110,7 @@ enum LogWriterManager {
      * @return message return to client
      */
     String subscribe(final Channel channel, final List<String> arguments) {
-        log.info("Subscribe-" + channel.remoteAddress() + "-" + arguments.toString());
+        log.info("Subscribe '{}' from {}", arguments.toString(), channel.remoteAddress());
         //judge arguments length
         if (arguments.size() == 1) {
             //if length is 1
@@ -121,10 +122,10 @@ enum LogWriterManager {
                 //judge whether request log file is the subscribed log file or not
                 if (Objects.equals(subscribed.getFilePath(), filePath)) {
                     //yes
-                    return String.format(Constant.SUCCESS_SUBSCRIBED, filePath);
+                    return String.format(Constants.SUCCESS_SUBSCRIBED, filePath);
                 } else {
                     //not
-                    return Constant.ERROR_MULTIPLE_SUBSCRIBTION;
+                    return Constants.ERROR_MULTIPLE_SUBSCRIBTION;
                 }
             } else {
                 //not subscribed
@@ -134,16 +135,16 @@ enum LogWriterManager {
                     //exists
                     logWriter.subscribe(channel);
                     //subscribtion success
-                    return String.format(Constant.SUCCESS_SUBSCRIBED, filePath);
+                    return String.format(Constants.SUCCESS_SUBSCRIBED, filePath);
                 } else {
                     //not exists
                     //subscribtion error
-                    return String.format(Constant.ERROR_FILE_NOT_FOUND, filePath);
+                    return String.format(Constants.ERROR_FILE_NOT_FOUND, filePath);
                 }
             }
         } else {
             //if length is not 1
-            return String.format(Constant.ERROR_INVALID_ARGUMENTS, arguments.toString());
+            return String.format(Constants.ERROR_INVALID_ARGUMENTS, arguments.toString());
         }
     }
 
@@ -154,16 +155,16 @@ enum LogWriterManager {
      * @return the message to return to the client.
      */
     String unsubscribe(final Channel channel) {
-        log.info("Unsubscribe-" + channel.remoteAddress());
+        log.info("Unsubscribe " + channel.remoteAddress());
         //get the subscribed log writer.
         final LogWriter subscribed = subscribed(channel);
         if (subscribed != null) {
             subscribed.unsubscribe(channel);
             //if not null, the client already subscribed a log file.
-            return Constant.SUCCESS_UNSUBSCRIBED;
+            return Constants.SUCCESS_UNSUBSCRIBED;
         } else {
             //if null, the client didn't subscribe any log file.
-            return Constant.ERROR_NOT_SUBSCRIBED;
+            return Constants.ERROR_NOT_SUBSCRIBED;
         }
     }
 
@@ -190,7 +191,7 @@ enum LogWriterManager {
      */
     private boolean isValidLogFile(final String line) {
         return !line.isEmpty() &&
-                !line.startsWith(Constant.COMMENT_SYMBOL) &&
+                !line.startsWith(Constants.COMMENT_SYMBOL) &&
                 Files.exists(Paths.get(line));
     }
 }
