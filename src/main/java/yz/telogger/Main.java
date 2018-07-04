@@ -25,6 +25,8 @@ public final class Main {
     public static void main(String[] args) throws CertificateException, SSLException, InterruptedException {
         log.info("Telogger booting");
 
+        //初始化配置
+        Config.INSTANCE.init();
         //初始化LogWriterManager
         LogWriterManager.INSTANCE.init();
         //初始化CommandManager
@@ -32,7 +34,7 @@ public final class Main {
 
         //SSL加密
         final SslContext sslContext;
-        if (Constant.SSL) {
+        if (Config.INSTANCE.isSsl()) {
             SelfSignedCertificate ssc = new SelfSignedCertificate();
             sslContext = SslContextBuilder.forServer(ssc.certificate(), ssc.privateKey()).build();
         } else {
@@ -54,16 +56,16 @@ public final class Main {
                             if (sslContext != null) {
                                 pipeline.addLast(sslContext.newHandler(socketChannel.alloc()));
                             }
-                            pipeline.addLast(new IdleStateHandler(0, Constant.WRITER_IDLE_TIME_SECONDS, 0))
+                            pipeline.addLast(new IdleStateHandler(0, Constants.WRITER_IDLE_TIME_SECONDS, 0))
                                     .addLast(new StringDecoder(StandardCharsets.UTF_8))
                                     .addLast(new StringEncoder(StandardCharsets.UTF_8))
                                     .addLast(new Handler());
                         }
                     });
             //绑定端口，并接受连接
-            log.info("Bind port " + Constant.PORT + ", start");
-            final ChannelFuture channelFuture = bootstrap.bind("0.0.0.0", Constant.PORT).sync();
-            log.info("Bind port " + Constant.PORT + ", completed");
+            log.info("Bind port " + Config.INSTANCE.getPort() + ", start");
+            final ChannelFuture channelFuture = bootstrap.bind("0.0.0.0", Config.INSTANCE.getPort()).sync();
+            log.info("Bind port " + Config.INSTANCE.getPort() + ", completed");
             //阻塞直至socket关闭
             channelFuture.channel().closeFuture().sync();
         } finally {
