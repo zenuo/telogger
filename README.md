@@ -64,7 +64,7 @@ $ openssl s_client -connect 127.0.0.1:8007
 
 - if not enabled SSL
 ```
-$ telnet localhost 8007
+$ telnet 127.0.0.1 8007
 ```
 
 below is the output:
